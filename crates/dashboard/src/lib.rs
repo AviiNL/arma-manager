@@ -13,37 +13,12 @@ cfg_if! {
         use leptos_axum::*;
         use leptos::leptos_config::get_config_from_env;
 
-        // async fn server_fn_handler(
-        //     path: Path<String>,
-        //     headers: HeaderMap,
-        //     raw_query: RawQuery,
-        //     request: Request<AxumBody>,
-        // ) -> impl IntoResponse {
-        //     handle_server_fns_with_context(
-        //         path,
-        //         headers,
-        //         raw_query,
-        //         move |_cx| { // not sure if we're going to need some contexts
-        //             // provide_context::<SqlitePool>(cx, pool.clone());
-        //             // provide_context::<Option<User>>(cx, auth_session.current_user.clone());
-        //             // provide_context::<AuthSession>(cx, auth_session.clone());
-        //         },
-        //         request,
-        //     )
-        //     .await
-        // }
-
         async fn leptos_routes_handler(
             State(leptos_options): State<LeptosOptions>,
             req: Request<AxumBody>,
         ) -> Response {
-            let handler = leptos_axum::render_app_to_stream_with_context(
+            let handler = leptos_axum::render_app_to_stream(
                 leptos_options.clone(),
-                move |_cx| { // not sure if we're going to need some contexts
-                    // provide_context::<SqlitePool>(cx, pool.clone());
-                    // provide_context::<Option<User>>(cx, auth_session.current_user.clone());
-                    // provide_context::<AuthSession>(cx, auth_session.clone());
-                },
                 |cx| view! { cx, <App/> },
             );
             handler(req).await.into_response()

@@ -3,7 +3,11 @@ use gloo_net::eventsource::futures::EventSource;
 use leptos::{html::Textarea, *};
 use leptos_use::*;
 
-use crate::{api::AuthorizedApi, app::DEFAULT_SSE_URL, components::Progress};
+use crate::{
+    api::AuthorizedApi,
+    app::{LogData, DEFAULT_SSE_URL},
+    components::Progress,
+};
 
 pub fn is_mounted(cx: Scope) -> impl Fn() -> bool {
     let (mounted, _) = create_signal(cx, ());
@@ -13,10 +17,12 @@ pub fn is_mounted(cx: Scope) -> impl Fn() -> bool {
 #[component]
 pub fn LogView(
     cx: Scope,
-    uri: &'static str,
+    channel: &'static str,
     visible: RwSignal<bool>,
-    progress: Option<RwSignal<Progress>>,
+    #[prop(optional)] progress: Option<RwSignal<Progress>>,
 ) -> impl IntoView {
+    let log_data = use_context::<RwSignal<LogData>>(cx).expect("to have found the log data provided");
+
     let log_content = create_rw_signal(cx, String::new());
 
     let element = create_node_ref::<Textarea>(cx);
@@ -52,64 +58,48 @@ pub fn LogView(
     });
 
     create_effect(cx, move |_| {
-        let api = use_context::<AuthorizedApi>(cx).expect("to have found the api provided");
+        let log_data = log_data.get();
+        let Some(lines) = log_data.get(channel) else {
+            return; // no logs for this channel
+        };
 
-        let uri = format!("{}/logs{}?token={}", DEFAULT_SSE_URL, uri, api.token().token);
-        let mut event_source = EventSource::new(&uri).expect("EventSource::new");
-        let mut stream = event_source.subscribe("message").unwrap();
+        log_content.set(lines.join("\n"));
 
-        spawn_local(async move {
-            let _ = event_source.state(); // this blocks until connected?
-            while let Some(Ok((event_type, msg))) = stream.next().await {
-                let new_data = msg.data().as_string().unwrap();
-                // new data is a json array ["","",""] etc
-                let new_data = serde_json::from_str::<Vec<String>>(&new_data).unwrap().join("\n");
+        if let Some(progress) = &progress {
+            let Some(line_to_parse) = lines.last() else {
+                return; // no logs for this channel
+            };
 
-                // if new_data contains progress: {float} ({usize} / {usize}})
+            if line_to_parse.contains("progress: ") {
+                let value = line_to_parse
+                    .split("progress: ")
+                    .nth(1)
+                    .unwrap()
+                    .split(" (")
+                    .nth(1)
+                    .unwrap()
+                    .split(" / ")
+                    .nth(0)
+                    .unwrap()
+                    .parse::<i64>()
+                    .unwrap();
 
-                if let Some(progress) = &progress {
-                    let mut line_to_parse = new_data.clone();
-                    if line_to_parse.contains("\n") {
-                        line_to_parse = line_to_parse.split("\n").last().unwrap().to_string();
-                    }
+                let max = line_to_parse
+                    .split("progress: ")
+                    .nth(1)
+                    .unwrap()
+                    .split(" / ")
+                    .nth(1)
+                    .unwrap()
+                    .split(")")
+                    .nth(0)
+                    .unwrap()
+                    .parse::<i64>()
+                    .unwrap();
 
-                    if line_to_parse.contains("progress: ") {
-                        let value = line_to_parse
-                            .split("progress: ")
-                            .nth(1)
-                            .unwrap()
-                            .split(" (")
-                            .nth(1)
-                            .unwrap()
-                            .split(" / ")
-                            .nth(0)
-                            .unwrap()
-                            .parse::<i64>()
-                            .unwrap();
-
-                        let max = line_to_parse
-                            .split("progress: ")
-                            .nth(1)
-                            .unwrap()
-                            .split(" / ")
-                            .nth(1)
-                            .unwrap()
-                            .split(")")
-                            .nth(0)
-                            .unwrap()
-                            .parse::<i64>()
-                            .unwrap();
-
-                        progress.update(|p| p.update(value, max));
-                    }
-                }
-
-                let old_data = log_content.get_untracked();
-
-                // append new_data to old_data and store in log_content
-                log_content.set(format!("{}{}\n", old_data, new_data));
+                progress.update(|p| p.update(value, max));
             }
-        });
+        }
     });
 
     view! { cx,

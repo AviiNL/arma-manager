@@ -1,6 +1,7 @@
 pub mod blank;
 pub mod home;
 pub mod layout;
+pub mod log;
 pub mod login;
 pub mod register;
 

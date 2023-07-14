@@ -4,7 +4,7 @@ use axum::{
     Router,
 };
 
-use crate::{jwt_auth::auth, status_handler::*, steam_handler::*, user_handler::*, AppState};
+use crate::{handlers::*, jwt_auth::auth, AppState};
 
 pub fn create_router(app_state: AppState) -> Router {
     let auth_layer = middleware::from_fn_with_state(app_state.clone(), auth);
@@ -17,9 +17,13 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/api/v1/status", get(api_status_handler))
         .route("/api/v1/arma/update", get(update_arma))
         .route("/api/v1/arma/cancel_update", get(cancel_update_arma))
+        .route("/api/v1/arma/start", get(start_arma))
+        .route("/api/v1/arma/stop", get(stop_arma))
+        .route("/api/v1/arma/restart", get(restart_arma))
+        .route("/api/v1/logs/:channel", get(api_logs))
         // SSE routes
         .route("/sse/v1/status", get(sse_status_handler))
-        .route("/sse/v1/logs/steamcmd", get(sse_steamcmd_log))
+        .route("/sse/v1/logs", get(sse_logs))
         .layer(auth_layer)
         // Public routes
         .route("/api/v1/auth/register", post(register_user_handler))

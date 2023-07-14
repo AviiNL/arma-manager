@@ -1,8 +1,14 @@
 use api_schema::response::FilteredUser;
+use futures::StreamExt;
+use gloo_net::eventsource::futures::EventSource;
 use leptos::{svg::Filter, *};
 use leptos_router::*;
 
-use crate::{api::AuthorizedApi, app::Theme, components::*};
+use crate::{
+    api::AuthorizedApi,
+    app::{Theme, DEFAULT_SSE_URL},
+    components::*,
+};
 
 use super::Page;
 
@@ -11,14 +17,6 @@ pub fn Layout<F>(cx: Scope, on_logout: F) -> impl IntoView
 where
     F: Fn() + 'static + Clone,
 {
-    let Some(user_info) = use_context::<FilteredUser>(cx) else {
-        unreachable!()
-    };
-
-    let Some(api) = use_context::<AuthorizedApi>(cx) else {
-        unreachable!()
-    };
-
     view! { cx,
         <>
             <div class="drawer drawer-mobile">
@@ -26,6 +24,7 @@ where
                 <PageContent on_logout />
                 <LeftSidebar />
             </div>
+            <SteamCmdDialog />
         </>
     }
     .into_view(cx)

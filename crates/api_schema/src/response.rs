@@ -50,3 +50,8 @@ pub struct Status {
     pub steamcmd: State,
     pub arma: State,
 }
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq)]
+pub struct LogResponse {
+    pub log: Vec<String>,
+}

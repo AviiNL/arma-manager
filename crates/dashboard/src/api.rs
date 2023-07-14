@@ -1,8 +1,4 @@
-use api_schema::{
-    request::{LoginUserSchema, RegisterUserSchema},
-    response::{ApiToken, FilteredUser, SimpleResponse, Status},
-    *,
-};
+use api_schema::{request::*, response::*, *};
 use gloo_net::http::{Request, Response};
 use serde::{de::DeserializeOwned, Deserializer};
 use serde_json::Value;
@@ -82,6 +78,26 @@ impl AuthorizedApi {
 
     pub async fn cancel_update_arma(&self) -> Result<SimpleResponse> {
         let url = format!("{}/arma/cancel_update", self.url);
+        self.send(Request::get(&url)).await
+    }
+
+    pub async fn start_arma(&self) -> Result<SimpleResponse> {
+        let url = format!("{}/arma/start", self.url);
+        self.send(Request::get(&url)).await
+    }
+
+    pub async fn stop_arma(&self) -> Result<SimpleResponse> {
+        let url = format!("{}/arma/stop", self.url);
+        self.send(Request::get(&url)).await
+    }
+
+    pub async fn restart_arma(&self) -> Result<SimpleResponse> {
+        let url = format!("{}/arma/restart", self.url);
+        self.send(Request::get(&url)).await
+    }
+
+    pub async fn get_log(&self, channel: impl Into<String>) -> Result<LogResponse> {
+        let url = format!("{}/logs/{}", self.url, channel.into());
         self.send(Request::get(&url)).await
     }
 

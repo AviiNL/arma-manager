@@ -34,8 +34,7 @@ where
             Some(info) => {
                 provide_context(cx, info);
 
-                view! { cx, <div id="root"><Layout on_logout=on_logout.clone() /></div>
-                <SteamCmdDialog /> }.into_view(cx)
+                view! { cx, <div id="root"><Layout on_logout=on_logout.clone() /></div> }.into_view(cx)
             }
             None => {
                 view! { cx,

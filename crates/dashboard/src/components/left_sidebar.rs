@@ -5,14 +5,10 @@ use crate::components::*;
 
 #[component]
 pub fn LeftSidebar(cx: Scope) -> impl IntoView {
-    // let close = create_action(cx, move |_| async move {
-    //     tracing::info!("Closing sidebar");
-    // });
-
     view! { cx,
         <div class="drawer-side">
             <label for="left-sidebar-drawer" class="drawer-overlay"></label>
-            <ul class="menu  pt-2 w-80 bg-base-100 text-base-content">
+            <ul class="menu w-80 bg-base-100 text-base-content">
                 <label for="left-sidebar-drawer" class="btn btn-ghost bg-base-300  btn-circle z-50 top-0 right-0 mt-4 mr-2 absolute lg:hidden">
                     <i class="fa fa-times"/>
                 </label>

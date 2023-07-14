@@ -147,4 +147,3 @@ impl Steam {
 }
 
 mod installer;
-pub mod log_watcher;

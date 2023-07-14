@@ -1,9 +1,17 @@
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::{
+    collections::HashMap,
+    sync::atomic::{AtomicBool, Ordering},
+    time::Duration,
+};
 
-use crate::{api::*, components::*, pages::*};
+use crate::{
+    api::*,
+    components::*,
+    pages::{log::Log, *},
+};
 use api_schema::response::{ApiToken, FilteredUser, Status};
 use derive_more::*;
-use futures::StreamExt;
+use futures::{channel::oneshot, stream, StreamExt};
 use gloo_net::eventsource::futures::EventSource;
 use leptos::*;
 use leptos_meta::*;
@@ -15,6 +23,49 @@ const API_TOKEN_STORAGE_KEY: &str = "token";
 
 use gloo_storage::{LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
+
+async fn sleep(duration: Duration) {
+    let (send, recv) = oneshot::channel();
+
+    set_timeout(
+        move || {
+            let _ = send.send(());
+        },
+        duration,
+    );
+
+    recv.await;
+}
+
+// #[derive(Clone)]
+// pub struct ArmaLog(pub String);
+// impl AsRef<str> for ArmaLog {
+//     fn as_ref(&self) -> &str {
+//         &self.0
+//     }
+// }
+
+// impl From<String> for ArmaLog {
+//     fn from(s: String) -> Self {
+//         Self(s)
+//     }
+// }
+
+// #[derive(Clone)]
+// pub struct SteamcmdLog(pub String);
+// impl AsRef<str> for SteamcmdLog {
+//     fn as_ref(&self) -> &str {
+//         &self.0
+//     }
+// }
+
+// impl From<String> for SteamcmdLog {
+//     fn from(s: String) -> Self {
+//         Self(s)
+//     }
+// }
+
+pub type LogData = HashMap<String, Vec<String>>;
 
 #[derive(Clone, Display, Serialize, Deserialize, PartialEq)]
 pub enum Theme {
@@ -34,6 +85,7 @@ pub fn App(cx: Scope) -> impl IntoView {
     let user_info = create_rw_signal(cx, None::<FilteredUser>);
     let status = create_rw_signal(cx, None::<Status>);
 
+    provide_context(cx, authorized_api);
     provide_context(cx, status);
 
     // -- actions -- //
@@ -87,6 +139,69 @@ pub fn App(cx: Scope) -> impl IntoView {
         }
     });
 
+    // Channel, Log lines
+    let base_logs = create_rw_signal(cx, LogData::default());
+    provide_context(cx, base_logs);
+
+    let fetch_logs = create_action(cx, move |_| async move {
+        match authorized_api.get_untracked() {
+            Some(api) => {
+                let api = api.clone();
+                if let Ok(new_data) = api.get_log("arma").await {
+                    base_logs.update(|l| {
+                        if !l.contains_key("arma") {
+                            l.insert("arma".into(), vec![]);
+                        }
+                        l.get_mut("arma").unwrap().extend(new_data.log.clone())
+                    });
+                }
+
+                if let Ok(new_data) = api.get_log("steamcmd").await {
+                    base_logs.update(|l| {
+                        if !l.contains_key("steamcmd") {
+                            l.insert("steamcmd".into(), vec![]);
+                        }
+                        l.get_mut("steamcmd").unwrap().extend(new_data.log.clone())
+                    });
+                }
+
+                let uri = format!("{}/logs?token={}", DEFAULT_SSE_URL, api.token().token);
+                let mut event_source = EventSource::new(&uri).expect("EventSource::new");
+
+                loop {
+                    let state = event_source.state();
+                    tracing::info!("Waiting for eventsource to connect: {}", (state as u16));
+                    if (state as u16) == 1 {
+                        break;
+                    }
+                    sleep(Duration::from_millis(100)).await;
+                }
+
+                let mut steamcmd_stream = event_source.subscribe("steamcmd").unwrap();
+                let mut arma_stream = event_source.subscribe("arma").unwrap();
+
+                let base_logs = base_logs.clone();
+                spawn_local(async move {
+                    let _ = event_source.state();
+                    let mut all_streams = stream::select(steamcmd_stream, arma_stream);
+                    tracing::info!("Starting eventsource");
+                    while let Some(Ok((event_type, msg))) = all_streams.next().await {
+                        let new_data = msg.data().as_string().unwrap();
+                        let new_data = serde_json::from_str::<Vec<String>>(&new_data).unwrap();
+                        base_logs.update(|l| {
+                            if !l.contains_key(&event_type) {
+                                l.insert(event_type.clone().into(), vec![]);
+                            }
+                            l.get_mut(&event_type).unwrap().extend(new_data.clone())
+                        });
+                    }
+                    tracing::info!("Ending eventsource");
+                });
+            }
+            None => {}
+        }
+    });
+
     // -- theme management -- //
 
     let (theme, set_theme) = create_signal(cx, Theme::Default);
@@ -120,6 +235,7 @@ pub fn App(cx: Scope) -> impl IntoView {
             authorized_api.update(|a| *a = Some(api));
             fetch_status.dispatch(());
             fetch_user_info.dispatch(());
+            fetch_logs.dispatch(());
         }
     });
 
@@ -195,7 +311,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                     />
                     <Route path=Page::Logs.path()
                         view=move |cx| {
-                            view! { cx, <Blank title="Logs" /> }
+                            view! { cx, <Log /> }
                         }
                     />
                 </Route>

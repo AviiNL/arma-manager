@@ -5,10 +5,11 @@ use axum::{
     Extension, Router,
 };
 pub use config::*;
+use log_service::LogService;
 use repository::{UserRepository, UserTokenRepository};
 use route::create_router;
 use sqlx::sqlite::SqlitePoolOptions;
-use status::StatusService;
+use status_service::StatusService;
 use tower_http::cors::CorsLayer;
 
 pub async fn start() {
@@ -24,6 +25,10 @@ pub async fn start() {
     let user_token_repository = UserTokenRepository::new(pool.clone());
 
     let status = StatusService::new();
+    let log = LogService::new();
+
+    log.register("steamcmd", paths::get_log_path().join("steamcmd.log"));
+    log.register("arma", paths::get_arma_log_path().join("*.rpt"));
 
     let app_state = AppState {
         db: pool,
@@ -40,6 +45,7 @@ pub async fn start() {
         .layer(Extension(user_repository))
         .layer(Extension(user_token_repository))
         .layer(Extension(status))
+        .layer(Extension(log))
         .layer(cors);
 
     let dashboard = dashboard::get_router().await;
@@ -59,12 +65,11 @@ pub struct AppState {
 }
 
 mod config;
+mod handlers;
 mod jwt_auth;
+mod log_service;
 mod model;
 mod repository;
 mod response;
 mod route;
-mod status;
-mod status_handler;
-mod steam_handler;
-mod user_handler;
+mod status_service;

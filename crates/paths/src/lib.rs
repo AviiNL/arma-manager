@@ -31,3 +31,8 @@ pub fn get_log_path() -> PathBuf {
 
     path
 }
+
+pub fn get_arma_log_path() -> PathBuf {
+    let path = directories::BaseDirs::new().unwrap();
+    path.cache_dir().join("Arma 3")
+}

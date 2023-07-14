@@ -42,7 +42,7 @@ pub fn SteamCmdDialog(cx: Scope) -> impl IntoView {
             <div class="modal-box w-11/12 max-w-5xl h-4/6 flex flex-col">
                 <h3 class="font-bold text-lg">"steamcmd.log"</h3>
                 <div class="grow shrink">
-                <LogView uri="/steamcmd" visible=checked progress=Some(progress) />
+                <LogView channel="steamcmd" visible=checked progress=progress />
             </div>
             <ProgressBar values=progress />
             <div class="text-right mt-2">
