@@ -1,0 +1,63 @@
+[package]
+name = "arma-manager"
+version.workspace = true
+edition.workspace = true
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.dependencies]
+anyhow = "1.0.71"
+axum = { version = "0.6.18", features = ["macros"] }
+dotenvy = "0.15.7"
+futures = "0.3.28"
+process.path = "crates/process"
+serde = { version = "1.0.171", features = ["derive"] }
+serde_json = "1.0.102"
+steam.path = "crates/steam"
+sysinfo = "0.29.3"
+tokio = { version = "1.29.1", features = ["full"] }
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+winpty-rs = { version = "0.3.11", features = ["conpty"] }
+reqwest = { version = "0.11.18", features = ["rustls-tls", "json", "blocking"] }
+derive_more = "0.99.17"
+
+# Internal Packages
+api_schema.path = "crates/api_schema"
+arma_manager_web.path = "crates/web"
+paths.path = "crates/paths"
+dashboard.path = "crates/dashboard"
+
+[dependencies]
+anyhow.workspace = true
+dotenvy.workspace = true
+tokio.workspace = true
+arma_manager_web.workspace = true
+tracing-subscriber.workspace = true
+steam.workspace = true
+
+[[workspace.metadata.leptos]]
+name = "arma-manager"
+site-root = "target/site"
+site-pkg-dir = "pkg"
+style-file = "crates/dashboard/style/output.scss"
+assets-dir = "crates/dashboard/public"
+site-addr = "127.0.0.1:3000"
+reload-port = 3001
+browserquery = "defaults"
+watch = false
+env = "DEV"
+
+bin-package = "arma-manager"
+bin-default-features = false
+bin-features = []
+
+lib-package = "frontend"
+lib-default-features = false
+lib-features = []

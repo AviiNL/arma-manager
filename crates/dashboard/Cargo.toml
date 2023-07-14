@@ -1,0 +1,58 @@
+[package]
+name = "dashboard"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+cfg-if = "1"
+
+md5 = "0.7.0"
+
+api_schema.workspace = true
+derive_more.workspace = true
+
+axum = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true }
+
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+futures.workspace = true
+
+tower = { version = "0.4", features = ["full"], optional = true }
+tower-http = { version = "0.4", features = ["full"], optional = true }
+gloo-net = "0.2"
+gloo-storage = "0.2"
+gloo-timers = "0.2"
+
+leptos = { path = "../../../leptos/leptos", features = ["tracing"] }
+leptos_meta = { path = "../../../leptos/meta" }
+leptos_router = { path = "../../../leptos/router" }
+leptos_axum = { path = "../../../leptos/integrations/axum", optional = true }
+
+leptos-use = { path = "../../../leptos-use" }
+
+http = "0.2"
+thiserror = "1"
+
+[features]
+default = []
+hydrate = [
+    "leptos/hydrate",
+    "leptos_meta/hydrate",
+    "leptos_router/hydrate",
+]
+ssr = [
+    "leptos/ssr",
+    "leptos_meta/ssr",
+    "leptos_router/ssr",
+    "dep:axum",
+    "dep:leptos_axum",
+    "dep:reqwest",
+    "dep:tower",
+    "dep:tower-http",
+]

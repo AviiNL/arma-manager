@@ -1,0 +1,19 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dashboard = { path = "../dashboard", features = ["hydrate"] }
+
+leptos = { path = "../../../leptos/leptos", features = ["hydrate"] }
+
+tracing-subscriber = { workspace = true }
+tracing-subscriber-wasm = { version = "0.1.0" }
+console_error_panic_hook = { version = "0.1" }
+wasm-bindgen = { version = "=0.2.87" }
