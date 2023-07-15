@@ -118,9 +118,10 @@ impl LogService {
 
         let tx = self.tx.clone();
         tokio::spawn(async move {
-            watcher
-                .watch(&watch_options.path.as_path(), RecursiveMode::Recursive)
-                .expect("watch");
+            if let Err(e) = watcher.watch(&watch_options.path.as_path(), RecursiveMode::Recursive) {
+                println!("watch error: {:?}", e);
+                return;
+            }
 
             let options = watch_options.clone();
             let mut last_pos: u64 = 0;
@@ -206,12 +207,13 @@ impl WatchOptions {
             }
             watch_options.extension = Some(path.extension().unwrap().to_str().unwrap().to_string());
         } else {
-            let metadata = std::fs::metadata(path.as_path()).expect("metadata");
-            if metadata.is_file() {
-                watch_options.path = path.parent().unwrap().into();
-                let stem = path.file_stem().unwrap().to_str().unwrap().to_string();
-                watch_options.stem = Some(stem);
-                watch_options.extension = Some(path.extension().unwrap().to_str().unwrap().to_string());
+            if let Ok(metadata) = std::fs::metadata(path.as_path()) {
+                if metadata.is_file() {
+                    watch_options.path = path.parent().unwrap().into();
+                    let stem = path.file_stem().unwrap().to_str().unwrap().to_string();
+                    watch_options.stem = Some(stem);
+                    watch_options.extension = Some(path.extension().unwrap().to_str().unwrap().to_string());
+                }
             }
         }
 

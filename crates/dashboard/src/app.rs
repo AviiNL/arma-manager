@@ -168,15 +168,6 @@ pub fn App(cx: Scope) -> impl IntoView {
                 let uri = format!("{}/logs?token={}", DEFAULT_SSE_URL, api.token().token);
                 let mut event_source = EventSource::new(&uri).expect("EventSource::new");
 
-                loop {
-                    let state = event_source.state();
-                    tracing::info!("Waiting for eventsource to connect: {}", (state as u16));
-                    if (state as u16) == 1 {
-                        break;
-                    }
-                    sleep(Duration::from_millis(100)).await;
-                }
-
                 let mut steamcmd_stream = event_source.subscribe("steamcmd").unwrap();
                 let mut arma_stream = event_source.subscribe("arma").unwrap();
 

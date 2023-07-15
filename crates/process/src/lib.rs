@@ -111,7 +111,19 @@ impl Process {
         self.arguments.push(arg.into());
         self
     }
+    #[cfg(not(target_os = "windows"))]
+    pub fn start(self) -> Result<ProcessControls, ProcessError> {
+        println!("Platform not supportedn.");
 
+        let (tx, rx) = unbounded_channel::<ControlMessage>();
+        let (ptx, prx) = unbounded_channel::<ProcessMessage>();
+
+        let _ = ptx.send(ProcessMessage::Finished);
+
+        Ok(InnerProcessControls::new(tx, prx).into())
+    }
+
+    #[cfg(target_os = "windows")]
     pub fn start(self) -> Result<ProcessControls, ProcessError> {
         use winptyrs::{AgentConfig, MouseMode, PTYArgs, PTYBackend, PTY};
 

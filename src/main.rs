@@ -12,6 +12,7 @@ async fn main() -> anyhow::Result<()> {
         arma_manager_web::start().await;
     });
 
+    #[cfg(target_os = "windows")]
     steam::Steam::install().await.unwrap();
 
     // wait for ctrl-c
