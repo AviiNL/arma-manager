@@ -37,34 +37,6 @@ pub async fn sleep(duration: Duration) {
     recv.await;
 }
 
-// #[derive(Clone)]
-// pub struct ArmaLog(pub String);
-// impl AsRef<str> for ArmaLog {
-//     fn as_ref(&self) -> &str {
-//         &self.0
-//     }
-// }
-
-// impl From<String> for ArmaLog {
-//     fn from(s: String) -> Self {
-//         Self(s)
-//     }
-// }
-
-// #[derive(Clone)]
-// pub struct SteamcmdLog(pub String);
-// impl AsRef<str> for SteamcmdLog {
-//     fn as_ref(&self) -> &str {
-//         &self.0
-//     }
-// }
-
-// impl From<String> for SteamcmdLog {
-//     fn from(s: String) -> Self {
-//         Self(s)
-//     }
-// }
-
 pub type LogData = HashMap<String, Vec<String>>;
 
 #[derive(Clone, Display, Serialize, Deserialize, PartialEq)]
