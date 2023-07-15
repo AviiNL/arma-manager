@@ -1,7 +1,7 @@
 -- Add up migration script here
 CREATE TABLE "presets" (
     "id"         INTEGER NOT NULL UNIQUE,
-    "name"       TEXT NOT NULL,
+    "name"       TEXT NOT NULL UNIQUE,
     "selected"   BOOL DEFAULT NULL UNIQUE,
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -14,6 +14,7 @@ CREATE TABLE "preset_items" (
     "name"              TEXT NOT NULL,
     "published_file_id" INTEGER NOT NULL,
     "position"          INTEGER NOT NULL,
+    "enabled"           BOOL DEFAULT NULL,
     "created_at"        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at"        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY("id" AUTOINCREMENT)

@@ -6,7 +6,7 @@ use axum::{
 };
 pub use config::*;
 use log_service::LogService;
-use repository::{UserRepository, UserTokenRepository};
+use repository::{PresetRepository, UserRepository, UserTokenRepository};
 use route::create_router;
 use sqlx::sqlite::SqlitePoolOptions;
 use status_service::StatusService;
@@ -23,6 +23,7 @@ pub async fn start() {
 
     let user_repository = UserRepository::new(pool.clone());
     let user_token_repository = UserTokenRepository::new(pool.clone());
+    let preset_repository = PresetRepository::new(pool.clone());
 
     let status = StatusService::new();
     let log = LogService::new();
@@ -44,6 +45,7 @@ pub async fn start() {
     let api = create_router(app_state)
         .layer(Extension(user_repository))
         .layer(Extension(user_token_repository))
+        .layer(Extension(preset_repository))
         .layer(Extension(status))
         .layer(Extension(log))
         .layer(cors);
