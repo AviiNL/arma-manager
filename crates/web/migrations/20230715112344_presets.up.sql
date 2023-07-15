@@ -14,7 +14,7 @@ CREATE TABLE "preset_items" (
     "name"              TEXT NOT NULL,
     "published_file_id" INTEGER NOT NULL,
     "position"          INTEGER NOT NULL,
-    "enabled"           BOOL DEFAULT NULL,
+    "enabled"           BOOL NOT NULL DEFAULT 1,
     "created_at"        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at"        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY("id" AUTOINCREMENT)

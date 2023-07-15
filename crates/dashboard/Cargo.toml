@@ -38,21 +38,10 @@ leptos-use = { path = "../../../leptos-use" }
 
 http = "0.2"
 thiserror = "1"
+scraper = "0.17.1"
+wasm-bindgen-futures = "0.4.37"
 
 [features]
 default = []
-hydrate = [
-    "leptos/hydrate",
-    "leptos_meta/hydrate",
-    "leptos_router/hydrate",
-]
-ssr = [
-    "leptos/ssr",
-    "leptos_meta/ssr",
-    "leptos_router/ssr",
-    "dep:axum",
-    "dep:leptos_axum",
-    "dep:reqwest",
-    "dep:tower",
-    "dep:tower-http",
-]
+hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
+ssr = ["leptos/ssr", "leptos_meta/ssr", "leptos_router/ssr", "dep:axum", "dep:leptos_axum", "dep:reqwest", "dep:tower", "dep:tower-http"]

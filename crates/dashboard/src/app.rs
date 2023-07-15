@@ -24,7 +24,7 @@ const API_TOKEN_STORAGE_KEY: &str = "token";
 use gloo_storage::{LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
 
-async fn sleep(duration: Duration) {
+pub async fn sleep(duration: Duration) {
     let (send, recv) = oneshot::channel();
 
     set_timeout(
@@ -77,6 +77,12 @@ pub enum Theme {
     Light,
 }
 
+#[derive(Clone, Display, Serialize, Deserialize, PartialEq)]
+pub enum LoadingState {
+    Loading,
+    Ready,
+}
+
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     // -- signals -- //
@@ -85,12 +91,17 @@ pub fn App(cx: Scope) -> impl IntoView {
     let user_info = create_rw_signal(cx, None::<FilteredUser>);
     let status = create_rw_signal(cx, None::<Status>);
 
+    let loading = create_rw_signal(cx, LoadingState::Loading);
+
     provide_context(cx, authorized_api);
     provide_context(cx, status);
+    provide_context(cx, loading);
 
     // -- actions -- //
 
     let fetch_user_info = create_action(cx, move |_| async move {
+        loading.set(LoadingState::Loading);
+
         match authorized_api.get_untracked() {
             Some(api) => match api.user_info().await {
                 Ok(info) => {
@@ -105,9 +116,13 @@ pub fn App(cx: Scope) -> impl IntoView {
                 tracing::error!("Unable to fetch user info: not logged in");
             }
         }
+
+        loading.set(LoadingState::Ready);
     });
 
     let logout = create_action(cx, move |_| async move {
+        loading.set(LoadingState::Loading);
+
         // this is also outside a reactive tracking context for some reason
         match authorized_api.get() {
             Some(api) => match api.logout().await {
@@ -122,10 +137,14 @@ pub fn App(cx: Scope) -> impl IntoView {
             None => {
                 tracing::error!("Unable to logout user: not logged in");
             }
-        }
+        };
+
+        loading.set(LoadingState::Ready);
     });
 
     let fetch_status = create_action(cx, move |_| async move {
+        loading.set(LoadingState::Loading);
+
         match authorized_api.get_untracked() {
             Some(api) => match api.last_status().await {
                 Ok(s) => {
@@ -136,7 +155,10 @@ pub fn App(cx: Scope) -> impl IntoView {
                 }
             },
             None => {}
-        }
+        };
+
+        // This is probably the longest thing we have to load
+        loading.set(LoadingState::Ready);
     });
 
     // Channel, Log lines
@@ -144,6 +166,8 @@ pub fn App(cx: Scope) -> impl IntoView {
     provide_context(cx, base_logs);
 
     let fetch_logs = create_action(cx, move |_| async move {
+        loading.set(LoadingState::Loading);
+
         match authorized_api.get_untracked() {
             Some(api) => {
                 let api = api.clone();
@@ -190,7 +214,10 @@ pub fn App(cx: Scope) -> impl IntoView {
                 });
             }
             None => {}
-        }
+        };
+
+        // This is probably the longest thing we have to load
+        loading.set(LoadingState::Ready);
     });
 
     // -- theme management -- //
@@ -221,6 +248,7 @@ pub fn App(cx: Scope) -> impl IntoView {
     let unauthorized_api = UnauthorizedApi::new(DEFAULT_API_URL);
 
     create_effect(cx, move |_| {
+        loading.set(LoadingState::Loading);
         if let Ok(token) = LocalStorage::get(API_TOKEN_STORAGE_KEY) {
             let api = AuthorizedApi::new(DEFAULT_API_URL, token);
             authorized_api.update(|a| *a = Some(api));
@@ -228,6 +256,7 @@ pub fn App(cx: Scope) -> impl IntoView {
             fetch_user_info.dispatch(());
             fetch_logs.dispatch(());
         }
+        loading.set(LoadingState::Ready);
     });
 
     // -- status -- //
@@ -336,6 +365,6 @@ pub fn App(cx: Scope) -> impl IntoView {
                 />
             </Routes>
         </Router>
-
+        <Loading />
     }
 }

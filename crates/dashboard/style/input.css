@@ -1,4 +1,5 @@
 @import './dropzone.css';
+@import './loading.css';
 
 @tailwind base;
 @tailwind components;

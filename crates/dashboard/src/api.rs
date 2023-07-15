@@ -101,6 +101,11 @@ impl AuthorizedApi {
         self.send(Request::get(&url)).await
     }
 
+    pub async fn post_preset(&self, preset: &CreatePresetSchema) -> Result<Preset> {
+        let url = format!("{}/presets", self.url);
+        self.send(Request::post(&url).json(preset)?).await
+    }
+
     pub fn token(&self) -> &ApiToken {
         &self.token
     }

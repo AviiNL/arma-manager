@@ -43,3 +43,4 @@ mod components;
 mod error_template;
 mod login;
 mod pages;
+mod preset_parser;

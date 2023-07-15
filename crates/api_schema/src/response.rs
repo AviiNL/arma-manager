@@ -55,3 +55,20 @@ pub struct Status {
 pub struct LogResponse {
     pub log: Vec<String>,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Preset {
+    pub id: i64,
+    pub name: String,
+    pub selected: bool,
+    pub items: Vec<PresetItem>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PresetItem {
+    pub id: i64,
+    pub name: String,
+    pub published_file_id: i64,
+    pub position: i64,
+    pub enabled: bool,
+}

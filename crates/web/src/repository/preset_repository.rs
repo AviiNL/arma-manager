@@ -1,7 +1,8 @@
-use api_schema::request::*;
+use api_schema::{
+    request::*,
+    response::{Preset, PresetItem},
+};
 use sqlx::SqlitePool;
-
-use crate::model::*;
 
 use super::RepositoryResult;
 
@@ -15,59 +16,118 @@ impl PresetRepository {
         Self { pool }
     }
 
-    pub async fn create(&self, preset: &CreatePresetSchema) -> RepositoryResult<Preset> {
-        let existing = sqlx::query_as!(
-            CreatePresetSchema,
+    pub async fn create(&self, input: &CreatePresetSchema) -> RepositoryResult<Preset> {
+        let preset = sqlx::query_as!(
+            SqlPreset,
             r#"
-            SELECT id, name, selected FROM presets WHERE name = ?
+            INSERT INTO presets (name, selected)
+            VALUES (?, ?)
+            ON CONFLICT (name) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+            RETURNING id, name, selected
             "#,
-            preset.name
+            input.name,
+            false
         )
-        .fetch_optional(&self.pool)
+        .fetch_one(&self.pool)
         .await?;
 
-        let preset = if let Some(existing) = existing {
-            // delete all items
-            sqlx::query!(
-                r#"
-                DELETE FROM preset_items WHERE preset_id = ?
-                "#,
-                existing.id
-            );
+        // set as selected
+        self.select(preset.id).await?;
 
-            existing
-        } else {
-            let preset = sqlx::query_as!(
-                Preset,
+        // clear items if they exist
+        sqlx::query!(
+            r#"
+            DELETE FROM preset_items WHERE preset_id = ?
+            "#,
+            preset.id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        let mut items = vec![];
+        // add items
+        for item in &input.items {
+            let item = sqlx::query_as!(
+                PresetItem,
                 r#"
-                INSERT INTO presets (name, selected)
-                VALUES (?, 1)
-                RETURNING id, name, selected
+                INSERT INTO preset_items (preset_id, name, published_file_id, position, enabled)
+                VALUES (?, ?, ?, ?, ?)
+                RETURNING id, name, published_file_id, position, enabled
                 "#,
-                preset.name
+                preset.id,
+                item.name,
+                item.published_file_id,
+                item.position,
+                item.enabled
             )
             .fetch_one(&self.pool)
             .await?;
 
-            preset
-        };
-
-        // add items
-        for item in &preset.items {
-            sqlx::query_as!(
-                PresetItemSchema
-                r#"
-                INSERT INTO preset_items (preset_id, name, published_file_id, position)
-                VALUES (?, ?, ?, ?, ?)
-                "#,
-                preset.id,
-                item.name,
-                item.value
-            )
-            .execute(&self.pool)
-            .await?;
+            items.push(item);
         }
+
+        let preset = Preset {
+            id: preset.id,
+            name: preset.name,
+            selected: preset.selected.is_some(),
+            items: items,
+        };
 
         Ok(preset)
     }
+
+    async fn select(&self, id: i64) -> RepositoryResult<Preset> {
+        // unselect all
+        sqlx::query(
+            r#"
+            UPDATE presets SET selected = NULL WHERE selected = 1
+            "#,
+        )
+        .execute(&self.pool)
+        .await?;
+
+        // select one
+        let preset = sqlx::query_as!(
+            SqlPreset,
+            r#"
+            UPDATE presets SET selected = 1 WHERE id = ?
+            RETURNING id as "id!", name, selected
+            "#,
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        let items = vec![]; // self.get_items(preset.id).await?;
+
+        Ok(Preset {
+            id: preset.id,
+            name: preset.name,
+            selected: preset.selected.is_some(),
+            items,
+        })
+    }
+
+    // async fn get_items(&self, preset_id: i64) -> RepositoryResult<Vec<PresetItem>> {
+    //     let items = sqlx::query_as!(
+    //         PresetItem,
+    //         r#"
+    //         SELECT name, published_file_id, position, enabled
+    //         FROM preset_items
+    //         WHERE preset_id = ?
+    //         ORDER BY position ASC
+    //         "#,
+    //         preset_id
+    //     )
+    //     .fetch_all(&self.pool)
+    //     .await?;
+
+    //     Ok(items)
+    // }
+}
+
+struct SqlPreset {
+    id: i64,
+    name: String,
+    selected: Option<bool>,
 }

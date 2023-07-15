@@ -21,6 +21,7 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/api/v1/arma/stop", get(stop_arma))
         .route("/api/v1/arma/restart", get(restart_arma))
         .route("/api/v1/logs/:channel", get(api_logs))
+        .route("/api/v1/presets", post(create_preset))
         // SSE routes
         .route("/sse/v1/status", get(sse_status_handler))
         .route("/sse/v1/logs", get(sse_logs))

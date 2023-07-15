@@ -10,13 +10,6 @@ use sqlx::{
 };
 
 #[derive(Debug, Deserialize, sqlx::FromRow, Serialize, Clone)]
-pub struct Preset {
-    pub id: i64,
-    pub name: String,
-    pub selected: bool,
-}
-
-#[derive(Debug, Deserialize, sqlx::FromRow, Serialize, Clone)]
 pub struct User {
     pub id: uuid::Uuid,
     pub name: String,
