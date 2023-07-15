@@ -71,10 +71,10 @@ where
                             </li>
                             <div class="divider mt-0 mb-0"></div>
                             <li>
-                                <A href="#" exact=true on:click={
+                                <a href="#" on:click={
                                     let on_logout = on_logout.clone();
                                     move |_| on_logout()
-                                }>"Logout"</A>
+                                }>"Logout"</a>
                             </li>
                         </ul>
                     </div>

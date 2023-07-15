@@ -314,6 +314,11 @@ pub fn App(cx: Scope) -> impl IntoView {
                             view! { cx, <Log /> }
                         }
                     />
+                    <Route path=Page::Mods.path()
+                        view=move |cx| {
+                            view! { cx, <Blank title="Mod Presets" /> }
+                        }
+                    />
                 </Route>
                 <Route
                     path=Page::Login.path()

@@ -25,6 +25,7 @@ where
                 <LeftSidebar />
             </div>
             <SteamCmdDialog />
+            <Dropzone />
         </>
     }
     .into_view(cx)

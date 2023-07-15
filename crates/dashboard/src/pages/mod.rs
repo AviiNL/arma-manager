@@ -15,6 +15,7 @@ pub enum Page {
     Register,
     Profile,
     Logs,
+    Mods,
 }
 
 impl Page {
@@ -25,6 +26,7 @@ impl Page {
             Self::Register => "/register",
             Self::Profile => "/profile",
             Self::Logs => "/logs",
+            Self::Mods => "/mods",
         }
     }
 }

@@ -1,4 +1,5 @@
 mod credentials;
+mod dropzone;
 mod header;
 mod left_sidebar;
 mod log_view;
@@ -9,6 +10,7 @@ mod server_buttons;
 mod steamcmd_dialog;
 
 pub use credentials::*;
+pub use dropzone::*;
 pub use header::*;
 pub use left_sidebar::*;
 pub use log_view::*;

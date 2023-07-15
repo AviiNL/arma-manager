@@ -93,7 +93,7 @@ pub fn ServerButtons(cx: Scope) -> impl IntoView {
                         <div class="dropdown">
                             <div class="btn-group">
                                 <button class="btn glass hover:bg-success btn-success w-24" disabled=disabled onFocus="document.activeElement.blur();" onClick="document.activeElement.blur();" on:click=move |_| start_arma.dispatch(())>"Start"</button>
-                                <label for="start_dropdown" tabindex="0" disabled=disabled class="btn btn-ghost glass focus:bg-success hover:bg-success btn-success w-8 rounded-r-lg"><i class="fa fa-chevron-down"></i></label>
+                                <label for="start_dropdown" tabindex="0" disabled=disabled class="btn btn-ghost glass focus:bg-accent-focus hover:bg-accent btn-accent w-8 rounded-r-lg"><i class="fa fa-chevron-down"></i></label>
                             </div>
                         
                             <ul id="start_dropdown" tabindex="0" class="menu dropdown-content p-1 shadow bg-base-100 rounded-box w-52 mt-2">

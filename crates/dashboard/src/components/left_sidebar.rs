@@ -15,7 +15,7 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
 
                 <li class="mb-2 font-semibold text-xl">
                     <a href="/" class="gap-1">
-                        <img class="mask mask-squircle w-12" src="/logo.png" alt="DashWind Logo"/>
+                        <img class="mask mask-squircle w-12" src="/logo.png" alt="Logo"/>
                         "Arma"<div class="visible">"Server"</div><div class="lg:visible invisible">"Manager"</div>
                     </a>
                 </li>
@@ -45,7 +45,7 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 <div class="divider mt-0 mb-0"></div>
 
                 <li>
-                    <NavLink href="/mods/presets" exact=true class="font-normal">
+                    <NavLink href="/mods" exact=true class="font-normal">
                         <i class="fa fa-cubes"/>
                         "Mod Presets"
                     </NavLink>
