@@ -21,8 +21,8 @@ pub enum Page {
 impl Page {
     pub fn path(&self) -> &'static str {
         match self {
-            Self::Home => "/",
-            Self::Login => "/login",
+            Self::Home => "/console",
+            Self::Login => "/",
             Self::Register => "/register",
             Self::Profile => "/profile",
             Self::Logs => "/logs",

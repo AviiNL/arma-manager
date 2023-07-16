@@ -50,7 +50,7 @@ pub async fn start() {
         .layer(Extension(log))
         .layer(cors);
 
-    let dashboard = dashboard::get_router().await;
+    let dashboard = dashboard::get_router();
 
     let app = Router::new().merge(api).merge(dashboard);
 

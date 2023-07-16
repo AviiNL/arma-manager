@@ -1,5 +1,5 @@
 .loading-cover {
-    @apply pointer-events-none fixed inset-0 flex justify-center opacity-0;
+    @apply pointer-events-none fixed inset-0 flex flex-col justify-center opacity-0;
     z-index: 999;
 }
 

@@ -1,17 +1,37 @@
 use crate::{
     api::{self, AuthorizedApi, UnauthorizedApi},
+    app::{API_TOKEN_STORAGE_KEY, DEFAULT_API_URL},
+    app_state::{AppState, Loading},
     components::*,
 };
 use api_schema::request::*;
 use api_schema::response::*;
+use gloo_storage::{LocalStorage, Storage};
 use leptos::*;
 use leptos_router::*;
 
 #[component]
-pub fn Login<F>(cx: Scope, api: UnauthorizedApi, on_success: F) -> impl IntoView
-where
-    F: Fn(AuthorizedApi) + 'static + Clone,
-{
+pub fn Login(cx: Scope) -> impl IntoView {
+    let app_state = use_context::<AppState>(cx).expect("AppState to exist");
+    let authorized_api = app_state.api.clone();
+    let loading = app_state.loading.clone();
+
+    app_state.listen_for_login(cx);
+
+    let api = UnauthorizedApi::new();
+
+    // Check if we're not already logged in.
+    create_effect(cx, move |_| {
+        if let Ok(token) = LocalStorage::get(API_TOKEN_STORAGE_KEY) {
+            let api = AuthorizedApi::new(DEFAULT_API_URL, token);
+            tracing::info!("Already logged in, updating api");
+            authorized_api.update(|a| *a = Some(api));
+        } else {
+            // not logged in, stop loading
+            loading.update(|l| *l = Loading::Ready);
+        }
+    });
+
     let (login_error, set_login_error) = create_signal(cx, None::<String>);
     let (wait_for_response, set_wait_for_response) = create_signal(cx, false);
 
@@ -20,24 +40,30 @@ where
         let email = email.to_string();
         let password = password.to_string();
         let credentials = LoginUserSchema { email, password };
-        let on_success = on_success.clone();
         async move {
+            loading.update(|l| *l = Loading::Loading(Some("Logging in...")));
             set_wait_for_response.update(|w| *w = true);
             let result = api.login(&credentials).await;
             set_wait_for_response.update(|w| *w = false);
             match result {
                 Ok(res) => {
                     set_login_error.update(|e| *e = None);
-                    on_success(res);
+                    tracing::info!("Successfully logged in");
+                    authorized_api.update(|v| *v = Some(res));
+                    /*
+                    let navigate = use_navigate(cx);
+                    navigate(Page::Home.path(), Default::default()).expect("Home route");
+                    fetch_user_info.dispatch(());
+                    */
                 }
                 Err(err) => {
                     let msg = match err {
                         api::Error::Fetch(js_err) => {
-                            format!("{js_err:?}")
+                            format!("{js_err:?}") // 500 error
                         }
-                        api::Error::Api(err) => err.message,
+                        api::Error::Api(err) => err.message, // user error
                     };
-                    error!("Unable to login with {}: {msg}", credentials.email);
+                    tracing::error!("Unable to login with {}: {msg}", credentials.email);
                     set_login_error.update(|e| *e = Some(msg));
                 }
             }

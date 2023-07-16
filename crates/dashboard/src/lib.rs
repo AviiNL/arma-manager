@@ -24,7 +24,7 @@ cfg_if! {
             handler(req).await.into_response()
         }
 
-        pub async fn get_router() -> Router {
+        pub fn get_router() -> Router {
             let conf = get_config_from_env().unwrap();
             let leptos_options = conf.leptos_options;
             let routes = generate_route_list(|cx| view! { cx, <App/> });
@@ -39,6 +39,7 @@ cfg_if! {
 
 mod api;
 pub mod app;
+mod app_state;
 mod components;
 mod error_template;
 mod login;

@@ -4,6 +4,8 @@ use serde::{de::DeserializeOwned, Deserializer};
 use serde_json::Value;
 use thiserror::Error;
 
+use crate::app::DEFAULT_API_URL;
+
 #[derive(Clone, Copy)]
 pub struct UnauthorizedApi {
     url: &'static str,
@@ -16,8 +18,8 @@ pub struct AuthorizedApi {
 }
 
 impl UnauthorizedApi {
-    pub const fn new(url: &'static str) -> Self {
-        Self { url }
+    pub const fn new() -> Self {
+        Self { url: DEFAULT_API_URL }
     }
     pub async fn register(&self, credentials: &RegisterUserSchema) -> Result<FilteredUser> {
         let url = format!("{}/auth/register", self.url);
