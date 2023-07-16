@@ -2,7 +2,7 @@ use api_schema::response::FilteredUser;
 use leptos::*;
 use leptos_router::*;
 
-use crate::{api::AuthorizedApi, components::LogView};
+use crate::{api::AuthorizedApi, components::*};
 
 use super::Page;
 
@@ -17,7 +17,9 @@ pub fn Log(cx: Scope) -> impl IntoView {
             </div>
             <div class="divider mt-2"></div>
             <div class="h-full w-full pb-6 bg-base-100 grow">
+                <ClientOnly>
                 <LogView channel="arma" visible=visible />
+                </ClientOnly>
             </div>
         </div>
     }

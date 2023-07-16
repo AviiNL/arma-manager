@@ -19,7 +19,6 @@ use leptos_meta::*;
 use leptos_router::*;
 
 pub const DEFAULT_API_URL: &str = "/api/v1";
-pub const DEFAULT_SSE_URL: &str = "/sse/v1"; // TODO: Remove me
 pub const API_TOKEN_STORAGE_KEY: &str = "token";
 
 use gloo_storage::{LocalStorage, Storage};

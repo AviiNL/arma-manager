@@ -9,7 +9,7 @@ use log_service::LogService;
 use repository::{PresetRepository, UserRepository, UserTokenRepository};
 use route::create_router;
 use sqlx::sqlite::SqlitePoolOptions;
-use status_service::StatusService;
+use status_service::{State, StatusService};
 use tower_http::cors::CorsLayer;
 
 pub async fn start() {
@@ -27,6 +27,8 @@ pub async fn start() {
 
     let status = StatusService::new();
     let log = LogService::new();
+
+    status.set_steam(State::Running).await;
 
     log.register("steamcmd", paths::get_log_path().join("steamcmd.log"));
     log.register("arma", paths::get_arma_log_path().join("*.rpt"));

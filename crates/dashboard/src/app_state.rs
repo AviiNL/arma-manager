@@ -40,7 +40,7 @@ pub struct AppState {
     pub user: RwSignal<Option<FilteredUser>>,
     pub api: RwSignal<Option<AuthorizedApi>>,
     pub status: RwSignal<Option<Status>>,
-    pub log: RwSignal<Option<LogData>>,
+    pub log: RwSignal<LogData>,
 }
 
 impl AppState {
@@ -51,7 +51,7 @@ impl AppState {
             user: create_rw_signal(cx, None),
             api: create_rw_signal(cx, None),
             status: create_rw_signal(cx, None),
-            log: create_rw_signal(cx, None),
+            log: create_rw_signal(cx, Default::default()),
         }
     }
 
@@ -61,7 +61,7 @@ impl AppState {
             self.api.set(None);
             self.user.set(None);
             self.status.set(None);
-            self.log.set(None);
+            self.log.set(Default::default());
         }
     }
 
@@ -75,6 +75,7 @@ impl AppState {
 
         let user_signal = self.user.clone();
         let status_signal = self.status.clone();
+        let log_signal = self.log.clone();
 
         create_effect(cx, move |_| {
             if let Some(api) = api_signal.get() {
@@ -99,6 +100,7 @@ impl AppState {
 
                     // deffo confirmed signed in at this point, so we can load everything else in parallel
                     set_status(cx, &api, &status_signal).await;
+                    setup_logs(cx, &api, &log_signal).await;
 
                     // only do this if we are on Login page
                     if route.path() == crate::pages::Page::Login.path().trim_start_matches("/") {
@@ -164,6 +166,39 @@ async fn set_status(cx: Scope, api: &AuthorizedApi, status_signal: &RwSignal<Opt
     let abort_signal = create_sse(cx, "status", vec!["message".to_string()], move |_, data| {
         status_signal.set(data);
     });
+
+    api.add_abort_signal(abort_signal);
+}
+
+async fn setup_logs(cx: Scope, api: &AuthorizedApi, log_signal: &RwSignal<LogData>) {
+    let api = api.clone();
+
+    // grab steamcmd latest log
+    if let Ok(new_data) = api.get_log("arma").await {
+        log_signal.update(|l| {
+            if !l.contains_key("arma") {
+                l.insert("arma".into(), vec![]);
+            }
+            l.get_mut("arma").unwrap().extend(new_data.log.clone())
+        });
+    }
+
+    let log_signal = log_signal.clone();
+    let abort_signal = create_sse(
+        cx,
+        "logs",
+        vec!["steamcmd".to_string(), "arma".to_string()],
+        move |channel, data: Vec<String>| {
+            log_signal.update(|l| {
+                if !l.contains_key(&channel) {
+                    l.insert(channel.clone(), vec![]);
+                }
+                for line in data.iter() {
+                    l.get_mut(&channel).unwrap().push(line.clone());
+                }
+            });
+        },
+    );
 
     api.add_abort_signal(abort_signal);
 }

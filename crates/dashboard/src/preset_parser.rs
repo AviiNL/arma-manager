@@ -1,7 +1,4 @@
-use api_schema::{
-    request::{CreatePresetSchema, PresetItemSchema},
-    response::PresetItem,
-};
+use api_schema::request::{CreatePresetSchema, PresetItemSchema};
 
 pub fn is_preset(document: &str) -> bool {
     let document = scraper::Html::parse_document(document);
