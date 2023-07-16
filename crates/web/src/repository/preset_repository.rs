@@ -15,7 +15,54 @@ impl PresetRepository {
     pub fn new(pool: SqlitePool) -> Self {
         Self { pool }
     }
+}
 
+impl PresetRepository {
+    pub async fn get_all(&self) -> RepositoryResult<Vec<Preset>> {
+        let presets = sqlx::query_as!(
+            SqlPreset,
+            r#"
+            SELECT id, name, selected
+            FROM presets
+            ORDER BY name ASC
+            "#
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let mut result = vec![];
+        for preset in presets {
+            let items = self.get_items(preset.id).await?;
+            result.push(Preset {
+                id: preset.id,
+                name: preset.name,
+                selected: preset.selected.is_some(),
+                items,
+            });
+        }
+
+        Ok(result)
+    }
+
+    async fn get_items(&self, preset_id: i64) -> RepositoryResult<Vec<PresetItem>> {
+        let items = sqlx::query_as!(
+            PresetItem,
+            r#"
+            SELECT id, name, published_file_id, position, enabled
+            FROM preset_items
+            WHERE preset_id = ?
+            ORDER BY position ASC
+            "#,
+            preset_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(items)
+    }
+}
+
+impl PresetRepository {
     pub async fn create(&self, input: &CreatePresetSchema) -> RepositoryResult<Preset> {
         let preset = sqlx::query_as!(
             SqlPreset,
@@ -107,23 +154,6 @@ impl PresetRepository {
             items,
         })
     }
-
-    // async fn get_items(&self, preset_id: i64) -> RepositoryResult<Vec<PresetItem>> {
-    //     let items = sqlx::query_as!(
-    //         PresetItem,
-    //         r#"
-    //         SELECT name, published_file_id, position, enabled
-    //         FROM preset_items
-    //         WHERE preset_id = ?
-    //         ORDER BY position ASC
-    //         "#,
-    //         preset_id
-    //     )
-    //     .fetch_all(&self.pool)
-    //     .await?;
-
-    //     Ok(items)
-    // }
 }
 
 struct SqlPreset {

@@ -9,6 +9,7 @@ edition = "2021"
 anyhow.workspace = true
 tokio.workspace = true
 sysinfo.workspace = true
+tracing.workspace = true
 
 [target.'cfg(windows)'.dependencies]
 winpty-rs.workspace = true

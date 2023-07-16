@@ -5,6 +5,15 @@ use axum::{response::IntoResponse, Extension};
 use crate::repository::PresetRepository;
 use crate::response::{ApiResponse, ApiResult, ErrorResponse};
 
+pub async fn get_presets(Extension(preset_repository): Extension<PresetRepository>) -> ApiResult<impl IntoResponse> {
+    let presets = preset_repository
+        .get_all()
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    Ok(ApiResponse::new(presets))
+}
+
 pub async fn create_preset(
     Extension(preset_repository): Extension<PresetRepository>,
     Json(input): Json<CreatePresetSchema>,

@@ -33,7 +33,7 @@ pub enum Loading {
 
 pub type LogData = HashMap<String, Vec<String>>;
 
-pub type PresetList = Vec<(i64, String)>;
+pub type PresetList = Vec<Preset>;
 
 #[derive(Clone, Copy)]
 pub struct AppState {
@@ -160,13 +160,9 @@ async fn set_user(api: &AuthorizedApi, user_signal: &RwSignal<Option<FilteredUse
 async fn set_status(cx: Scope, api: &AuthorizedApi, status_signal: &RwSignal<Option<Status>>) {
     let api = api.clone();
     let status_signal = status_signal.clone();
-    match api.last_status().await {
-        Ok(status) => {
-            status_signal.set(Some(status));
-        }
-        Err(e) => {
-            tracing::error!("Failed to fetch status: {:?}", e);
-        }
+
+    if let Ok(status) = api.last_status().await {
+        status_signal.set(Some(status));
     }
 
     // also start the sse for status here? still need to make an abstraction for it though
@@ -222,20 +218,25 @@ async fn setup_logs(cx: Scope, api: &AuthorizedApi, log_signal: &RwSignal<LogDat
 
 async fn setup_presets(cx: Scope, api: &AuthorizedApi, preset_signal: &RwSignal<PresetList>) {
     let api = api.clone();
+
+    if let Ok(presets) = api.get_presets().await {
+        preset_signal.set(presets);
+    }
+
     let preset_signal = preset_signal.clone();
 
-    let abort_signal = create_sse(
-        cx,
-        "presets",
-        vec!["message".to_string()],
-        move |_, data: PresetUpdate| match data {
-            PresetUpdate::Added((preset_id, name)) => todo!(),
-            PresetUpdate::Removed(preset_id) => todo!(),
-            PresetUpdate::Activated(preset_id) => todo!(), // implies deactivating the other one
-            PresetUpdate::ItemEnabled(preset_id, item_id) => todo!(),
-            PresetUpdate::ItemDisabled(preset_id, item_id) => todo!(),
-        },
-    );
-
-    api.add_abort_signal(abort_signal);
+    // TODO: make this route lol
+    // let abort_signal = create_sse(
+    //     cx,
+    //     "presets",
+    //     vec!["message".to_string()],
+    //     move |_, data: PresetUpdate| match data {
+    //         PresetUpdate::Added((preset_id, name)) => todo!(),
+    //         PresetUpdate::Removed(preset_id) => todo!(),
+    //         PresetUpdate::Activated(preset_id) => todo!(), // implies deactivating the other one
+    //         PresetUpdate::ItemEnabled(preset_id, item_id) => todo!(),
+    //         PresetUpdate::ItemDisabled(preset_id, item_id) => todo!(),
+    //     },
+    // );
+    // api.add_abort_signal(abort_signal);
 }

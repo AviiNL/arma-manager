@@ -113,7 +113,7 @@ impl Process {
     }
     #[cfg(not(target_os = "windows"))]
     pub fn start(self) -> Result<ProcessControls, ProcessError> {
-        println!("Platform not supported.");
+        tracing::error!("Platform not supported.");
 
         let (tx, rx) = unbounded_channel::<ControlMessage>();
         let (ptx, prx) = unbounded_channel::<ProcessMessage>();

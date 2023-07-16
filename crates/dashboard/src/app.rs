@@ -80,7 +80,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                     />
                     <Route path=Page::Presets.path()
                         view=move |cx| {
-                            view! { cx, <Blank title="Mod Presets" /> }
+                            view! { cx, <Presets /> }
                         }
                     />
                 </Route>
