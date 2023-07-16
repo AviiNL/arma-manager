@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use api_schema::response::{State, Status};
 use leptos::{html::*, *};
+use leptos_router::*;
 use leptos_use::*;
 
 use crate::{
@@ -9,6 +10,7 @@ use crate::{
     app::sleep,
     app_state::{self, AppState, Loading},
     components::{LogView, Progress, ProgressBar},
+    pages::Page,
 };
 
 #[component]
@@ -23,6 +25,9 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
         spawn_local(async move {
             let api = api.get_untracked().expect("api to exist");
 
+            // I guess we could just always do this, if we're already there, this hopefully just does nothing
+            use_navigate(cx)("/console/presets", Default::default()).expect("Presets route");
+
             loading.set(Loading::Loading(Some("Processing files...")));
 
             // called when files are dropped on zone
@@ -34,8 +39,6 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
 
                 // all this shit needs to get split up
                 let preset = api.post_preset(&data).await.unwrap();
-
-                tracing::info!("{:?}", preset);
             }
 
             loading.set(Loading::Ready);

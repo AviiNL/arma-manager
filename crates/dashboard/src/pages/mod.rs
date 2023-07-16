@@ -15,7 +15,7 @@ pub enum Page {
     Dashboard,
     Profile,
     Logs,
-    Mods,
+    Presets,
 }
 
 impl Page {
@@ -27,7 +27,7 @@ impl Page {
             Self::Dashboard => "",
             Self::Profile => "profile",
             Self::Logs => "logs",
-            Self::Mods => "mods",
+            Self::Presets => "presets",
         }
     }
 }

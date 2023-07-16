@@ -45,7 +45,7 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 <div class="divider mt-0 mb-0"></div>
 
                 <li>
-                    <NavLink href={Page::Mods.path()} exact=true class="font-normal">
+                    <NavLink href={Page::Presets.path()} exact=true class="font-normal">
                         <i class="fa fa-cubes"/>
                         "Mod Presets"
                     </NavLink>

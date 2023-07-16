@@ -33,6 +33,8 @@ pub enum Loading {
 
 pub type LogData = HashMap<String, Vec<String>>;
 
+pub type PresetList = Vec<(i64, String)>;
+
 #[derive(Clone, Copy)]
 pub struct AppState {
     pub theme: RwSignal<Theme>,
@@ -41,6 +43,7 @@ pub struct AppState {
     pub api: RwSignal<Option<AuthorizedApi>>,
     pub status: RwSignal<Option<Status>>,
     pub log: RwSignal<LogData>,
+    pub presets: RwSignal<PresetList>,
 }
 
 impl AppState {
@@ -52,6 +55,7 @@ impl AppState {
             api: create_rw_signal(cx, None),
             status: create_rw_signal(cx, None),
             log: create_rw_signal(cx, Default::default()),
+            presets: create_rw_signal(cx, Default::default()),
         }
     }
 
@@ -62,6 +66,7 @@ impl AppState {
             self.user.set(None);
             self.status.set(None);
             self.log.set(Default::default());
+            self.presets.set(Default::default());
         }
     }
 
@@ -76,6 +81,7 @@ impl AppState {
         let user_signal = self.user.clone();
         let status_signal = self.status.clone();
         let log_signal = self.log.clone();
+        let preset_signal = self.presets.clone();
 
         create_effect(cx, move |_| {
             if let Some(api) = api_signal.get() {
@@ -101,10 +107,11 @@ impl AppState {
                     // deffo confirmed signed in at this point, so we can load everything else in parallel
                     set_status(cx, &api, &status_signal).await;
                     setup_logs(cx, &api, &log_signal).await;
+                    setup_presets(cx, &api, &preset_signal).await;
 
                     // only do this if we are on Login page
                     if route.path() == crate::pages::Page::Login.path().trim_start_matches("/") {
-                        tracing::info!("Redirecting to /console");
+                        tracing::info!("Redirecting to {}", crate::pages::Page::Home.path());
                         navigate(crate::pages::Page::Home.path(), Default::default()).expect("Home route");
                     }
                 });
@@ -207,6 +214,26 @@ async fn setup_logs(cx: Scope, api: &AuthorizedApi, log_signal: &RwSignal<LogDat
                     l.get_mut(&channel).unwrap().push(line.clone());
                 }
             });
+        },
+    );
+
+    api.add_abort_signal(abort_signal);
+}
+
+async fn setup_presets(cx: Scope, api: &AuthorizedApi, preset_signal: &RwSignal<PresetList>) {
+    let api = api.clone();
+    let preset_signal = preset_signal.clone();
+
+    let abort_signal = create_sse(
+        cx,
+        "presets",
+        vec!["message".to_string()],
+        move |_, data: PresetUpdate| match data {
+            PresetUpdate::Added((preset_id, name)) => todo!(),
+            PresetUpdate::Removed(preset_id) => todo!(),
+            PresetUpdate::Activated(preset_id) => todo!(), // implies deactivating the other one
+            PresetUpdate::ItemEnabled(preset_id, item_id) => todo!(),
+            PresetUpdate::ItemDisabled(preset_id, item_id) => todo!(),
         },
     );
 

@@ -72,3 +72,13 @@ pub struct PresetItem {
     pub position: i64,
     pub enabled: bool,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum PresetUpdate {
+    Added((i64, String)),  // preset id and name
+    Removed(i64),          // preset id
+    Activated(i64),        // preset id
+    ItemEnabled(i64, i64), // preset id and item id
+    ItemDisabled(i64, i64), // preset id and item id
+                           // ItemOrderChanged(i64, i64, i64), // preset id, item id, new position - Yeah i have no fucking clue on how to actually do this
+}
