@@ -1,4 +1,7 @@
+use std::{rc::Rc, sync::Mutex};
+
 use api_schema::{request::*, response::*, *};
+use futures::channel::oneshot;
 use gloo_net::http::{Request, Response};
 use serde::{de::DeserializeOwned, Deserializer};
 use serde_json::Value;
@@ -15,6 +18,7 @@ pub struct UnauthorizedApi {
 pub struct AuthorizedApi {
     url: &'static str,
     token: ApiToken,
+    sse_abort_signals: Rc<Mutex<Vec<oneshot::Sender<()>>>>,
 }
 
 impl UnauthorizedApi {
@@ -35,8 +39,27 @@ impl UnauthorizedApi {
 }
 
 impl AuthorizedApi {
-    pub const fn new(url: &'static str, token: ApiToken) -> Self {
-        Self { url, token }
+    pub fn new(url: &'static str, token: ApiToken) -> Self {
+        Self {
+            url,
+            token,
+            sse_abort_signals: Rc::new(Mutex::new(vec![])),
+        }
+    }
+
+    pub fn add_abort_signal(&self, signal: oneshot::Sender<()>) {
+        self.sse_abort_signals.lock().unwrap().push(signal);
+    }
+
+    pub fn run_abort_signals(&self) {
+        let mut signals = self.sse_abort_signals.lock().unwrap();
+        for signal in signals.drain(..) {
+            if let Err(e) = signal.send(()) {
+                tracing::error!("Error sending abort signal: {:?}", e);
+            } else {
+                tracing::info!("Sent abort signal");
+            }
+        }
     }
 
     fn auth_header_value(&self) -> String {

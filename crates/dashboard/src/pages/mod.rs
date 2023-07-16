@@ -1,11 +1,10 @@
+pub mod authenticated_base;
 pub mod blank;
-pub mod home;
-pub mod layout;
 pub mod log;
 pub mod login;
 pub mod register;
 
-pub use self::{blank::*, home::*, layout::*, login::*, register::*};
+pub use self::{authenticated_base::*, blank::*, login::*, register::*};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub enum Page {

@@ -1,16 +1,19 @@
 use api_schema::response::{State, Status};
 use leptos::{*, ev};
 
-use crate::api::AuthorizedApi;
+use crate::{api::AuthorizedApi, app_state::AppState};
 
 #[component]
 pub fn ServerButtons(cx: Scope) -> impl IntoView {
-    let status = use_context::<RwSignal<Option<Status>>>(cx).expect("to have found the status provided");
-    let authorized_api = use_context::<AuthorizedApi>(cx).expect("to have found the api provided");
+    //let status = use_context::<RwSignal<Option<Status>>>(cx).expect("to have found the status provided");
+    //let authorized_api = use_context::<AuthorizedApi>(cx).expect("to have found the api provided");
 
-    let api = authorized_api.clone();
+    let app_state = use_context::<AppState>(cx).expect("AppState to exist");
+    let status = app_state.status.clone();
+    let api = app_state.api.clone();
+
     let update_arma = create_action(cx, move |_| {
-        let api = api.clone();
+        let api = api.clone().get_untracked().expect("to have found the api provided");
         async move {
             match api.update_arma().await {
                 Ok(_) => {
@@ -23,9 +26,8 @@ pub fn ServerButtons(cx: Scope) -> impl IntoView {
         }
     });
 
-    let api = authorized_api.clone();
     let start_arma = create_action(cx, move |_| {
-        let api = api.clone();
+        let api = api.clone().get_untracked().expect("to have found the api provided");
         async move {
             match api.start_arma().await {
                 Ok(_) => {
@@ -38,9 +40,8 @@ pub fn ServerButtons(cx: Scope) -> impl IntoView {
         }
     });
 
-    let api = authorized_api.clone();
     let stop_arma = create_action(cx, move |_| {
-        let api = api.clone();
+        let api = api.clone().get_untracked().expect("to have found the api provided");
         async move {
             match api.stop_arma().await {
                 Ok(_) => {
@@ -53,9 +54,8 @@ pub fn ServerButtons(cx: Scope) -> impl IntoView {
         }
     });
 
-    let api = authorized_api.clone();
     let restart_arma = create_action(cx, move |_| {
-        let api = api.clone();
+        let api = api.clone().get_untracked().expect("to have found the api provided");
         async move {
             match api.restart_arma().await {
                 Ok(_) => {

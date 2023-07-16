@@ -3,11 +3,16 @@ use std::collections::HashMap;
 use api_schema::{request::*, response::*};
 use derive_more::Display;
 use gloo_storage::{LocalStorage, Storage};
+use http::status;
 use leptos::*;
 use leptos_router::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{api::AuthorizedApi, app::API_TOKEN_STORAGE_KEY};
+use crate::{
+    api::AuthorizedApi,
+    app::{API_TOKEN_STORAGE_KEY, DEFAULT_API_URL},
+    sse::create_sse,
+};
 
 #[derive(Clone, Display, Serialize, Deserialize, PartialEq)]
 pub enum Theme {
@@ -28,7 +33,7 @@ pub enum Loading {
 
 pub type LogData = HashMap<String, Vec<String>>;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct AppState {
     pub theme: RwSignal<Theme>,
     pub loading: RwSignal<Loading>,
@@ -50,33 +55,69 @@ impl AppState {
         }
     }
 
-    pub fn listen_for_login(&self, cx: Scope) {
-        let api = self.api.clone();
-        let user = self.user.clone();
-        create_effect(cx, move |_| async move {
-            let api = api.get(); // track
-            if api.is_some() {
-                // let api = api.expect("api to no longer be none");
-                // this should be tracked?
-                tracing::info!("Api updated, fetching user info");
-                LocalStorage::set(API_TOKEN_STORAGE_KEY, api.token()).expect("LocalStorage::set");
+    pub fn cleanup(&self) {
+        if let Some(api) = self.api.get_untracked() {
+            api.run_abort_signals();
+            self.api.set(None);
+            self.user.set(None);
+            self.status.set(None);
+            self.log.set(None);
+        }
+    }
 
-                // Load User Info
-                // match api.user_info().await {
-                //     Ok(user_info) => user.set(Some(user_info)),
-                //     Err(_) => {
-                //         // token is invalid
-                //         // delete the key
-                //         LocalStorage::delete(API_TOKEN_STORAGE_KEY);
-                //         user.set(None);
-                //         return;
-                //     }
-                // }
+    pub fn check_auth(&self, cx: Scope) {
+        if self.api.get_untracked().is_some() {
+            return;
+        }
 
+        let api_signal = self.api.clone();
+        let loading_signal = self.loading.clone();
+
+        let user_signal = self.user.clone();
+        let status_signal = self.status.clone();
+
+        create_effect(cx, move |_| {
+            if let Some(api) = api_signal.get() {
                 let navigate = use_navigate(cx);
-                navigate(crate::pages::Page::Home.path(), Default::default()).expect("Home route");
+                let route = use_route(cx);
+
+                LocalStorage::set(API_TOKEN_STORAGE_KEY, api.token());
+
+                spawn_local(async move {
+                    let api = api_signal.get_untracked().expect("api to exist");
+                    // Fetch user
+                    if !set_user(&api, &user_signal).await {
+                        api_signal.set(None);
+                        loading_signal.set(Loading::Ready);
+
+                        if route.path() != crate::pages::Page::Login.path().trim_start_matches("/") {
+                            navigate(crate::pages::Page::Login.path(), Default::default()).expect("Login route");
+                        }
+
+                        return;
+                    }
+
+                    // deffo confirmed signed in at this point, so we can load everything else in parallel
+                    set_status(cx, &api, &status_signal).await;
+
+                    // only do this if we are on Login page
+                    if route.path() == crate::pages::Page::Login.path().trim_start_matches("/") {
+                        tracing::info!("Redirecting to /console");
+                        navigate(crate::pages::Page::Home.path(), Default::default()).expect("Home route");
+                    }
+                });
             }
-        })
+        });
+
+        create_effect(cx, move |_| {
+            if let Ok(token) = LocalStorage::get(API_TOKEN_STORAGE_KEY) {
+                let api = AuthorizedApi::new(DEFAULT_API_URL, token);
+                api_signal.set(Some(api));
+            } else {
+                // not logged in, stop loading
+                loading_signal.update(|l| *l = Loading::Ready);
+            }
+        });
     }
 
     pub fn load_theme(&self, cx: Scope) -> RwSignal<AdditionalAttributes> {
@@ -91,4 +132,38 @@ impl AppState {
 
         create_rw_signal::<AdditionalAttributes>(cx, vec![("data-theme", move || theme.get().to_string())].into())
     }
+}
+
+async fn set_user(api: &AuthorizedApi, user_signal: &RwSignal<Option<FilteredUser>>) -> bool {
+    match api.user_info().await {
+        Ok(user_info) => {
+            user_signal.set(Some(user_info));
+            true
+        }
+        Err(e) => {
+            LocalStorage::delete(API_TOKEN_STORAGE_KEY);
+            tracing::error!("Failed to fetch user info: {:?}", e);
+            false
+        }
+    }
+}
+
+async fn set_status(cx: Scope, api: &AuthorizedApi, status_signal: &RwSignal<Option<Status>>) {
+    let api = api.clone();
+    let status_signal = status_signal.clone();
+    match api.last_status().await {
+        Ok(status) => {
+            status_signal.set(Some(status));
+        }
+        Err(e) => {
+            tracing::error!("Failed to fetch status: {:?}", e);
+        }
+    }
+
+    // also start the sse for status here? still need to make an abstraction for it though
+    let abort_signal = create_sse(cx, "status", vec!["message".to_string()], move |_, data| {
+        status_signal.set(data);
+    });
+
+    api.add_abort_signal(abort_signal);
 }

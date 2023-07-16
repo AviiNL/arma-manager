@@ -2,7 +2,7 @@ use api_schema::response::FilteredUser;
 use leptos::*;
 use leptos_router::*;
 
-use crate::{api::AuthorizedApi, pages::layout::Layout};
+use crate::api::AuthorizedApi;
 
 use super::Page;
 

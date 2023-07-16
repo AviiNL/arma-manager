@@ -40,6 +40,7 @@ http = "0.2"
 thiserror = "1"
 scraper = "0.17.1"
 wasm-bindgen-futures = "0.4.37"
+merge-streams = "0.1.2"
 
 [features]
 default = []

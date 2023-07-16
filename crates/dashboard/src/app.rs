@@ -19,7 +19,7 @@ use leptos_meta::*;
 use leptos_router::*;
 
 pub const DEFAULT_API_URL: &str = "/api/v1";
-pub const DEFAULT_SSE_URL: &str = "/sse/v1";
+pub const DEFAULT_SSE_URL: &str = "/sse/v1"; // TODO: Remove me
 pub const API_TOKEN_STORAGE_KEY: &str = "token";
 
 use gloo_storage::{LocalStorage, Storage};
@@ -40,22 +40,6 @@ pub async fn sleep(duration: Duration) {
 
 pub type LogData = HashMap<String, Vec<String>>;
 
-#[derive(Clone, Display, Serialize, Deserialize, PartialEq)]
-pub enum Theme {
-    #[display(fmt = "default")]
-    Default,
-    #[display(fmt = "dark")]
-    Dark,
-    #[display(fmt = "light")]
-    Light,
-}
-
-#[derive(Clone, Display, Serialize, Deserialize, PartialEq)]
-pub enum LoadingState {
-    Loading,
-    Ready,
-}
-
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     provide_meta_context(cx);
@@ -74,12 +58,12 @@ pub fn App(cx: Scope) -> impl IntoView {
 
         <Router>
             <Routes>
-        //         <Route
-        //             path=Page::Home.path()
-        //             view=move |cx| {
-        //                 view! { cx, <Home on_logout=on_logout user_info=user_info.into()/> }
-        //             }
-        //         >
+                <Route
+                    path=Page::Home.path()
+                    view=move |cx| {
+                        view! { cx, <AuthenticatedBase /> }
+                    }
+                >
         //             <Route path=Page::Home.path()
         //                 view=move |cx| {
         //                     view! { cx, <Blank title="Dashboard" /> }
@@ -100,7 +84,7 @@ pub fn App(cx: Scope) -> impl IntoView {
         //                     view! { cx, <Blank title="Mod Presets" /> }
         //                 }
         //             />
-        //         </Route>
+                </Route>
                 <Route
                     path=Page::Login.path()
                     view=move |cx| {

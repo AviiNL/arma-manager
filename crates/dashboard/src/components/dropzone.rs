@@ -6,22 +6,24 @@ use leptos_use::*;
 
 use crate::{
     api::AuthorizedApi,
-    app::{sleep, LoadingState},
+    app::sleep,
+    app_state::{self, AppState, Loading},
     components::{LogView, Progress, ProgressBar},
 };
 
 #[component]
 pub fn Dropzone(cx: Scope) -> impl IntoView {
-    let loading = use_context::<RwSignal<LoadingState>>(cx).expect("loading context to exist");
+    let app_state = use_context::<AppState>(cx).expect("AppState to exist");
+    let api = app_state.api.clone();
+    let loading = app_state.loading.clone();
 
     let document = leptos::window();
-    let drop_zone_el = create_node_ref::<Div>(cx);
 
     let on_drop = move |event: UseDropZoneEvent| {
         spawn_local(async move {
-            let api = use_context::<AuthorizedApi>(cx).expect("api context to exist");
+            let api = api.get_untracked().expect("api to exist");
 
-            loading.set(LoadingState::Loading);
+            loading.set(Loading::Loading(Some("Processing files...")));
 
             // called when files are dropped on zone
             for file in event.files {
@@ -36,7 +38,7 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
                 tracing::info!("{:?}", preset);
             }
 
-            loading.set(LoadingState::Ready);
+            loading.set(Loading::Ready);
         });
     };
 
@@ -47,7 +49,7 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
 
     view! { cx,
         <input type="checkbox" id="my-modal-5" class="dropzone-toggle" checked=move || is_over_drop_zone.get() />
-        <div class="dropzone" node_ref=drop_zone_el>
+        <div class="dropzone">
             "Drop the mods, the presets, or missions here."
         </div>
     }

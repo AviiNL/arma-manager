@@ -42,6 +42,6 @@ pub mod app;
 mod app_state;
 mod components;
 mod error_template;
-mod login;
 mod pages;
 mod preset_parser;
+mod sse;

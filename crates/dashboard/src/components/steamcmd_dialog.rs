@@ -3,21 +3,21 @@ use leptos::*;
 
 use crate::{
     api::AuthorizedApi,
+    app_state::AppState,
     components::{LogView, Progress, ProgressBar},
 };
 
 #[component]
 pub fn SteamCmdDialog(cx: Scope) -> impl IntoView {
-    let status = use_context::<RwSignal<Option<Status>>>(cx).expect("to have found the status provided");
+    let app_state = use_context::<AppState>(cx).expect("AppState to exist");
+    let status = app_state.status.clone();
+    let api = app_state.api.clone();
 
     let checked = create_rw_signal(cx, false);
-
     let progress = create_rw_signal(cx, Progress::default());
 
-    let api = use_context::<AuthorizedApi>(cx).expect("to have found the api provided");
-
     let cancel_update_arma = create_action(cx, move |_| {
-        let api = api.clone();
+        let api = api.clone().get_untracked().expect("to have found the api provided");
         async move {
             match api.cancel_update_arma().await {
                 Ok(_) => {
