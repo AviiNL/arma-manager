@@ -1,7 +1,10 @@
 use api_schema::response::Preset;
 use leptos::*;
 
-use crate::app_state::{AppState, Loading};
+use crate::{
+    app_state::{AppState, Loading},
+    components::PresetItem,
+};
 
 #[component]
 pub fn Presets(cx: Scope) -> impl IntoView {
@@ -16,7 +19,10 @@ pub fn Presets(cx: Scope) -> impl IntoView {
         let presets = presets.get();
         // find the preset with the selected flag
         if let Some(preset) = presets.iter().find(|preset| preset.selected) {
-            active_preset.set(Some(preset.clone()));
+            let mut preset = preset.clone();
+            // we need to sort the items inside preset by position
+            preset.items.sort_by(|a, b| a.position.cmp(&b.position));
+            active_preset.set(Some(preset));
         };
         loading.set(Loading::Ready);
     });
@@ -24,7 +30,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
     let set_active = create_action(cx, move |id: &i64| {
         let id = id.clone();
         async move {
-            // unset the active flag on all presets
+            // this will probably be done by SSE once we update the actual database
             presets.update(|list| {
                 list.iter_mut().for_each(|preset| {
                     preset.selected = false;
@@ -37,7 +43,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
     });
 
     view! { cx,
-        <div class="card w-full flex-1 p-6 bg-base-100 shadow-xl mt-2 mb-4">
+        <div class="card w-full p-6 bg-base-100 shadow-xl mt-2 mb-4">
             <div class="text-sm font-semibold inline-block">
                 <div class="dropdown" title="Change Preset">
                     <label class="btn gap-1 normal-case btn-ghost" tabindex="0">
@@ -50,12 +56,20 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                 </div>
             </div>
             <div class="divider mt-2"></div>
-            <div class="h-full w-full grow">
-                <table class="table w-full">
-                    <tr>
-                        <th></th>
-                        <th>"Mod"</th>
-                    </tr>
+            <div class="w-full h-full overflow-auto">
+                <table class="table table-zebra w-full">
+                    <tbody>
+                        {move || if let Some(active_preset) = active_preset.get() {
+                            view! { cx, <For each={move || active_preset.items.clone()} key={|item| item.id} view={move |cx, item| view! { cx, <PresetItem item=item.clone() /> }.into_view(cx)} /> }.into_view(cx)
+                        } else {
+                            view! { cx,
+                                <tr>
+                                    <td class="text-center" colspan="3">No Preset Selected</td>
+                                </tr>
+                            }.into_view(cx)
+                        }}
+
+                    </tbody>
                 </table>
             </div>
         </div>
