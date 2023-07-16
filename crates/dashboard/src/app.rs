@@ -92,12 +92,12 @@ pub fn App(cx: Scope) -> impl IntoView {
                         }
                     }
                 />
-                // <Route
-                //     path=Page::Register.path()
-                //     view=move |cx| {
-                //         view! { cx, <Register api=unauthorized_api/> }
-                //     }
-                // />
+                <Route
+                    path=Page::Register.path()
+                    view=move |cx| {
+                        view! { cx, <Register /> }
+                    }
+                />
             </Routes>
         </Router>
         <Loading />

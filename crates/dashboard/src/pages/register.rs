@@ -1,5 +1,6 @@
 use crate::{
     api::{self, UnauthorizedApi},
+    app_state::{AppState, Loading},
     components::*,
 };
 use api_schema::{request::*, response::FilteredUser};
@@ -7,7 +8,11 @@ use leptos::*;
 use leptos_router::*;
 
 #[component]
-pub fn Register(cx: Scope, api: UnauthorizedApi) -> impl IntoView {
+pub fn Register(cx: Scope) -> impl IntoView {
+    let app_state = use_context::<AppState>(cx).expect("AppState to exist");
+    let loading = app_state.loading.clone();
+
+    let api = UnauthorizedApi::new();
     let (register_response, set_register_response) = create_signal(cx, None::<FilteredUser>);
     let (register_error, set_register_error) = create_signal(cx, None::<String>);
     let (wait_for_response, set_wait_for_response) = create_signal(cx, false);
@@ -27,6 +32,7 @@ pub fn Register(cx: Scope, api: UnauthorizedApi) -> impl IntoView {
             };
             tracing::info!("Try to register new account for {}", credentials.email);
             async move {
+                loading.update(|l| *l = Loading::Loading(Some("Creating account...")));
                 // verify if email is an actual email address, by finding the @ symbol followed by some dot somewhere after the @
                 if !email.contains('@') {
                     set_register_error.update(|e| *e = Some("Invalid email address".to_string()));

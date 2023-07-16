@@ -1,6 +1,8 @@
 use leptos::{ev, *};
 use leptos_router::A;
 
+use crate::app_state::{AppState, Loading};
+
 #[component]
 pub fn LoginForm(
     cx: Scope,
@@ -8,6 +10,9 @@ pub fn LoginForm(
     error: Signal<Option<String>>,
     disabled: Signal<bool>,
 ) -> impl IntoView {
+    let app_state = use_context::<AppState>(cx).expect("to have found the app_state provided");
+    let loading = app_state.loading.clone();
+
     let (password, set_password) = create_signal(cx, String::new());
     let (email, set_email) = create_signal(cx, String::new());
 
@@ -25,6 +30,7 @@ pub fn LoginForm(
                         error
                             .get()
                             .map(|err| {
+                                loading.set(Loading::Ready);
                                 view! { cx, <p style="color:red;">{err}</p> }
                             })
                     }}
@@ -98,6 +104,9 @@ pub fn RegisterForm(
     error: Signal<Option<String>>,
     disabled: Signal<bool>,
 ) -> impl IntoView {
+    let app_state = use_context::<AppState>(cx).expect("to have found the app_state provided");
+    let loading = app_state.loading.clone();
+
     let (repeat_password, set_repeat_password) = create_signal(cx, String::new());
     let (password, set_password) = create_signal(cx, String::new());
     let (email, set_email) = create_signal(cx, String::new());
@@ -125,6 +134,7 @@ pub fn RegisterForm(
                         error
                             .get()
                             .map(|err| {
+                                loading.set(Loading::Ready);
                                 view! { cx, <p style="color:red;">{err}</p> }
                             })
                     }}
