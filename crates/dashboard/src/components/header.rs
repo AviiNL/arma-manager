@@ -2,7 +2,10 @@ use api_schema::response::{FilteredUser, Status};
 use leptos::*;
 use leptos_router::*;
 
-use crate::{app::Theme, components::ServerButtons};
+use crate::{
+    app_state::{AppState, Theme},
+    components::ServerButtons,
+};
 
 trait Gravatar {
     fn gravatar(&self, size: u32) -> String;
@@ -16,24 +19,45 @@ impl Gravatar for FilteredUser {
 }
 
 #[component]
-pub fn Header<F>(cx: Scope, on_logout: F) -> impl IntoView
-where
-    F: Fn() + 'static + Clone,
-{
-    let user = use_context::<FilteredUser>(cx).expect("to have found the user provided");
-    let theme = use_context::<WriteSignal<Theme>>(cx).expect("to have found the theme provided");
-    let current_theme = use_context::<ReadSignal<Theme>>(cx).expect("to have found the theme provided");
+pub fn Header(cx: Scope) -> impl IntoView {
+    let app_state = use_context::<AppState>(cx).expect("to have found the app_state provided");
+    let theme = app_state.theme.clone();
+    let user = app_state.user.clone();
+    let internal_user = create_rw_signal::<Option<FilteredUser>>(cx, None);
 
-    let checked = move || current_theme.get() == Theme::Light;
+    create_effect(cx, move |_| {
+        if let Some(user) = user.get() {
+            internal_user.set(Some(user.clone()));
+        } else {
+            internal_user.set(None);
+        }
+    });
+
+    let logout = create_action(cx, move |_| async move {
+        let api = app_state.api.clone().get_untracked().expect("api to exist");
+        match api.logout().await {
+            Ok(_) => {
+                app_state.cleanup();
+                use_navigate(cx)(crate::pages::Page::Login.path(), Default::default()).expect("Login route");
+            }
+            Err(e) => {
+                tracing::error!("Failed to logout: {:?}", e);
+            }
+        }
+
+        // this is the only place we _can_ logout, so might as well keep this here.
+    });
+
+    let checked = move || theme.get() == Theme::Light;
 
     let on_input = move |ev| {
-        use gloo_storage::Storage;
+        use gloo_storage::{LocalStorage, Storage};
         if event_target_checked(&ev) {
             theme.set(Theme::Light);
-            gloo_storage::LocalStorage::set("theme", Theme::Light).expect("LocalStorage::set");
+            LocalStorage::set("theme", Theme::Light).expect("LocalStorage::set");
         } else {
             theme.set(Theme::Dark);
-            gloo_storage::LocalStorage::set("theme", Theme::Dark).expect("LocalStorage::set");
+            LocalStorage::set("theme", Theme::Dark).expect("LocalStorage::set");
         }
     };
 
@@ -60,7 +84,11 @@ where
                     <div class="dropdown dropdown-end ml-4">
                         <label tabindex="0" class="btn btn-ghost btn-circle avatar">
                             <div class="w-10 rounded-full">
-                            <img src=move || user.gravatar(80) alt="profile" />
+                                {move || if let Some(user) = internal_user.get() {
+                                    view! { cx, <img src=move || user.gravatar(80) alt="profile" />}.into_view(cx)
+                                } else {
+                                    view! { cx, <img />}.into_view(cx)
+                                }}
                             </div>
                         </label>
                         <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
@@ -71,10 +99,7 @@ where
                             </li>
                             <div class="divider mt-0 mb-0"></div>
                             <li>
-                                <a href="#" on:click={
-                                    let on_logout = on_logout.clone();
-                                    move |_| on_logout()
-                                }>"Logout"</a>
+                                <a href="#" on:click=move |_| logout.dispatch(())>"Logout"</a>
                             </li>
                         </ul>
                     </div>
