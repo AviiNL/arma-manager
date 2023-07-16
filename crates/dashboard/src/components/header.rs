@@ -1,8 +1,10 @@
 use api_schema::response::{FilteredUser, Status};
+use gloo_storage::{LocalStorage, Storage};
 use leptos::*;
 use leptos_router::*;
 
 use crate::{
+    app::API_TOKEN_STORAGE_KEY,
     app_state::{AppState, Theme},
     components::ServerButtons,
 };
@@ -38,6 +40,7 @@ pub fn Header(cx: Scope) -> impl IntoView {
         match api.logout().await {
             Ok(_) => {
                 app_state.cleanup();
+                LocalStorage::delete(API_TOKEN_STORAGE_KEY);
                 use_navigate(cx)(crate::pages::Page::Login.path(), Default::default()).expect("Login route");
             }
             Err(e) => {

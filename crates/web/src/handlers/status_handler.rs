@@ -1,4 +1,4 @@
-use std::{convert::Infallible, sync::Arc, time::Duration};
+use std::{convert::Infallible, sync::Arc};
 
 use axum::{
     response::{sse::Event, sse::KeepAlive, IntoResponse, Sse},
@@ -17,7 +17,7 @@ pub async fn sse_status_handler(
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     let stream = WatchStream::new(status.subscribe());
 
-    Sse::new(stream).keep_alive(KeepAlive::new().interval(Duration::from_secs(1)).text("keep-alive"))
+    Sse::new(stream).keep_alive(KeepAlive::default())
 }
 
 pub async fn api_status_handler(Extension(status): Extension<Arc<StatusService>>) -> ApiResult<impl IntoResponse> {

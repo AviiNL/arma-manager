@@ -63,26 +63,26 @@ pub fn App(cx: Scope) -> impl IntoView {
                         view! { cx, <AuthenticatedBase /> }
                     }
                 >
-        //             <Route path=Page::Home.path()
-        //                 view=move |cx| {
-        //                     view! { cx, <Blank title="Dashboard" /> }
-        //                 }
-        //             />
-        //             <Route path=Page::Profile.path()
-        //                 view=move |cx| {
-        //                     view! { cx, <Blank title="Profile" /> }
-        //                 }
-        //             />
-        //             <Route path=Page::Logs.path()
-        //                 view=move |cx| {
-        //                     view! { cx, <Log /> }
-        //                 }
-        //             />
-        //             <Route path=Page::Mods.path()
-        //                 view=move |cx| {
-        //                     view! { cx, <Blank title="Mod Presets" /> }
-        //                 }
-        //             />
+                    <Route path=Page::Dashboard.path()
+                        view=move |cx| {
+                            view! { cx, <Blank title="Dashboard" /> }
+                        }
+                    />
+                    <Route path=Page::Profile.path()
+                        view=move |cx| {
+                            view! { cx, <Blank title="Profile" /> }
+                        }
+                    />
+                    <Route path=Page::Logs.path()
+                        view=move |cx| {
+                            view! { cx, <Log /> }
+                        }
+                    />
+                    <Route path=Page::Mods.path()
+                        view=move |cx| {
+                            view! { cx, <Blank title="Mod Presets" /> }
+                        }
+                    />
                 </Route>
                 <Route
                     path=Page::Login.path()

@@ -1,7 +1,7 @@
 use leptos::*;
 use leptos_router::*;
 
-use crate::components::*;
+use crate::{components::*, pages::Page};
 
 #[component]
 pub fn LeftSidebar(cx: Scope) -> impl IntoView {
@@ -21,13 +21,13 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 </li>
 
                 <li>
-                    <NavLink href="/" exact=true class="font-normal">
+                    <NavLink href={Page::Dashboard.path()} exact=true class="font-normal">
                         <i class="fa fa-home"/>
                         "Dashboard"
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink href="/profile" exact=true class="font-normal">
+                    <NavLink href={Page::Profile.path()} exact=true class="font-normal">
                         <i class="fa fa-user"/>
                         "Profile"
                     </NavLink>
@@ -36,16 +36,16 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 <div class="divider mt-0 mb-0"></div>
 
                 <li>
-                    <NavLink href="/logs" exact=true class="font-normal">
+                    <NavLink href={Page::Logs.path()} exact=true class="font-normal">
                         <i class="fa fa-file-lines"/>
-                        "Logs"
+                        "Arma Logs"
                     </NavLink>
                 </li>
 
                 <div class="divider mt-0 mb-0"></div>
 
                 <li>
-                    <NavLink href="/mods" exact=true class="font-normal">
+                    <NavLink href={Page::Mods.path()} exact=true class="font-normal">
                         <i class="fa fa-cubes"/>
                         "Mod Presets"
                     </NavLink>

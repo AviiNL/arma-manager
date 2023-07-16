@@ -183,6 +183,15 @@ async fn setup_logs(cx: Scope, api: &AuthorizedApi, log_signal: &RwSignal<LogDat
         });
     }
 
+    if let Ok(new_data) = api.get_log("steamcmd").await {
+        log_signal.update(|l| {
+            if !l.contains_key("steamcmd") {
+                l.insert("steamcmd".into(), vec![]);
+            }
+            l.get_mut("steamcmd").unwrap().extend(new_data.log.clone())
+        });
+    }
+
     let log_signal = log_signal.clone();
     let abort_signal = create_sse(
         cx,
@@ -191,7 +200,8 @@ async fn setup_logs(cx: Scope, api: &AuthorizedApi, log_signal: &RwSignal<LogDat
         move |channel, data: Vec<String>| {
             log_signal.update(|l| {
                 if !l.contains_key(&channel) {
-                    l.insert(channel.clone(), vec![]);
+                    tracing::error!("Log for {} not found!", channel);
+                    return;
                 }
                 for line in data.iter() {
                     l.get_mut(&channel).unwrap().push(line.clone());
