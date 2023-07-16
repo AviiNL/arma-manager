@@ -16,7 +16,7 @@ pub fn Log(cx: Scope) -> impl IntoView {
                 "Arma Logs"
             </div>
             <div class="divider mt-2"></div>
-            <div class="h-full w-full pb-6 bg-base-100 grow">
+            <div class="h-full w-full bg-base-100 grow bg-base-200 shadow-inner">
                 <ClientOnly>
                 <LogView channel="arma" visible=visible />
                 </ClientOnly>

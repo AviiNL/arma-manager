@@ -100,6 +100,6 @@ pub fn LogView(
     });
 
     view! { cx,
-        <textarea class="textarea log h-full w-full resize-none" readonly node_ref=element>{move || log_content.get()}</textarea>
+        <textarea class="textarea log h-full w-full resize-none focus:outline-none shadow-inner-xl bg-transparent" readonly node_ref=element>{move || log_content.get()}</textarea>
     }
 }
