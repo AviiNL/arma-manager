@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use api_schema::response::SimpleResponse;
+use arma::*;
 use axum::{response::IntoResponse, Extension};
 use steam::AppUpdate;
 
@@ -10,9 +11,6 @@ use crate::{
     service::{State, StatusService},
 };
 
-const ARMA_CLIENT_APP_ID: u64 = 107410;
-const ARMA_SERVER_APP_ID: u64 = 233780;
-
 pub async fn update_arma(Extension(status): Extension<Arc<StatusService>>) -> ApiResult<impl IntoResponse> {
     if status.steam().await != State::Stopped {
         return Err(ErrorResponse::new("Steam is already running").into());
@@ -20,7 +18,7 @@ pub async fn update_arma(Extension(status): Extension<Arc<StatusService>>) -> Ap
 
     status.set_steam(State::Starting).await;
 
-    let steam = steam::Steam::new_from_env().app_update(AppUpdate::new(233780).validate(true));
+    let steam = steam::Steam::new_from_env().app_update(AppUpdate::new(ARMA_SERVER_APP_ID).validate(true));
 
     let c = steam
         .run()
