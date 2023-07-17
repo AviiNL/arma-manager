@@ -5,8 +5,8 @@ use leptos_router::*;
 
 use crate::{
     app::API_TOKEN_STORAGE_KEY,
-    app_state::{AppState, Theme},
-    components::ServerButtons,
+    app_state::AppState,
+    components::{ServerButtons, ThemeSelect},
 };
 
 trait Gravatar {
@@ -51,19 +51,6 @@ pub fn Header(cx: Scope) -> impl IntoView {
         // this is the only place we _can_ logout, so might as well keep this here.
     });
 
-    let checked = move || theme.get() == Theme::Light;
-
-    let on_input = move |ev| {
-        use gloo_storage::{LocalStorage, Storage};
-        if event_target_checked(&ev) {
-            theme.set(Theme::Light);
-            LocalStorage::set("theme", Theme::Light).expect("LocalStorage::set");
-        } else {
-            theme.set(Theme::Dark);
-            LocalStorage::set("theme", Theme::Dark).expect("LocalStorage::set");
-        }
-    };
-
     view! { cx,
         <>
             <div class="navbar flex justify-between bg-base-100  z-10 shadow-md">
@@ -77,11 +64,7 @@ pub fn Header(cx: Scope) -> impl IntoView {
                 <div class="order-last">
 
                     <div class="dropdown dropdown-end">
-                        <label class="btn btn-ghost btn-circle swap swap-rotate text-2xl">
-                            <input type="checkbox" prop:checked=checked on:input=on_input/>
-                            <i class="fa-regular fa-sun swap-on"></i>
-                            <i class="fa-regular fa-moon swap-off"></i>
-                        </label>
+                        <ThemeSelect />
                     </div>
 
                     <div class="dropdown dropdown-end ml-4">

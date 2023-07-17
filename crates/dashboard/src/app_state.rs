@@ -11,18 +11,9 @@ use serde::{Deserialize, Serialize};
 use crate::{
     api::AuthorizedApi,
     app::{API_TOKEN_STORAGE_KEY, DEFAULT_API_URL},
+    components::Theme,
     sse::create_sse,
 };
-
-#[derive(Clone, Display, Serialize, Deserialize, PartialEq)]
-pub enum Theme {
-    #[display(fmt = "default")]
-    Default,
-    #[display(fmt = "dark")]
-    Dark,
-    #[display(fmt = "light")]
-    Light,
-}
 
 #[derive(Clone, Serialize, Deserialize, PartialEq)]
 pub enum Loading {
@@ -225,18 +216,65 @@ async fn setup_presets(cx: Scope, api: &AuthorizedApi, preset_signal: &RwSignal<
 
     let preset_signal = preset_signal.clone();
 
-    // TODO: make this route lol
-    // let abort_signal = create_sse(
-    //     cx,
-    //     "presets",
-    //     vec!["message".to_string()],
-    //     move |_, data: PresetUpdate| match data {
-    //         PresetUpdate::Added((preset_id, name)) => todo!(),
-    //         PresetUpdate::Removed(preset_id) => todo!(),
-    //         PresetUpdate::Activated(preset_id) => todo!(), // implies deactivating the other one
-    //         PresetUpdate::ItemEnabled(preset_id, item_id) => todo!(),
-    //         PresetUpdate::ItemDisabled(preset_id, item_id) => todo!(),
-    //     },
-    // );
-    // api.add_abort_signal(abort_signal);
+    let abort_signal = create_sse(
+        cx,
+        "presets",
+        vec!["create".to_string(), "select".to_string(), "update".to_string()],
+        move |event, data: PresetUpdate| match event.as_str() {
+            "create" => {
+                let PresetUpdate::Created(preset) = data else {
+                    tracing::error!("Incompatible data for event: {}", event);
+                    return;
+                };
+
+                preset_signal.update(|list| {
+                    let mut found = false;
+                    list.iter_mut().for_each(|p| {
+                        if p.id == preset.id {
+                            *p = preset.clone();
+                            found = true;
+                        }
+                    });
+
+                    if !found {
+                        list.push(preset);
+                    }
+                });
+            }
+            "select" => {
+                let PresetUpdate::Selected(id) = data else {
+                    tracing::error!("Incompatible data for event: {}", event);
+                    return;
+                };
+
+                preset_signal.update(|list| {
+                    list.iter_mut().for_each(|preset| {
+                        preset.selected = false;
+                        if preset.id == id {
+                            preset.selected = true;
+                        }
+                    });
+                });
+            }
+            "update" => {
+                let PresetUpdate::Updated(item) = data else {
+                    tracing::error!("Incompatible data for event: {}", event);
+                    return;
+                };
+
+                // ew?
+                preset_signal.update(|list| {
+                    list.iter_mut().for_each(|p| {
+                        p.items.iter_mut().for_each(|i| {
+                            if i.id == item.id {
+                                *i = item.clone();
+                            }
+                        });
+                    });
+                });
+            }
+            _ => tracing::error!("Unknown preset event: {}", event),
+        },
+    );
+    api.add_abort_signal(abort_signal);
 }

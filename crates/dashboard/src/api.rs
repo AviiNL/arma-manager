@@ -136,6 +136,16 @@ impl AuthorizedApi {
         self.send(Request::post(&url).json(preset)?).await
     }
 
+    pub async fn activate_preset(&self, preset: &SelectPresetSchema) -> Result<SimpleResponse> {
+        let url = format!("{}/presets", self.url);
+        self.send(Request::patch(&url).json(preset)?).await
+    }
+
+    pub async fn set_preset_item_enabled(&self, preset: &UpdatePresetItemSchema) -> Result<PresetItem> {
+        let url = format!("{}/presets/item", self.url);
+        self.send(Request::patch(&url).json(preset)?).await
+    }
+
     pub fn token(&self) -> &ApiToken {
         &self.token
     }

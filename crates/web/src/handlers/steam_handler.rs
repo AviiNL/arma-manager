@@ -6,7 +6,7 @@ use steam::AppUpdate;
 
 use crate::{
     response::{ApiResponse, ApiResult, ErrorResponse},
-    status_service::{State, StatusService},
+    service::{State, StatusService},
 };
 
 pub async fn update_arma(Extension(status): Extension<Arc<StatusService>>) -> ApiResult<impl IntoResponse> {

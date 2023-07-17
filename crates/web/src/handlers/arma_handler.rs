@@ -5,7 +5,7 @@ use axum::{response::IntoResponse, Extension};
 
 use crate::{
     response::{ApiResponse, ApiResult, ErrorResponse},
-    status_service::{State, StatusService},
+    service::{State, StatusService},
 };
 
 pub async fn start_arma(Extension(status): Extension<Arc<StatusService>>) -> ApiResult<impl IntoResponse> {

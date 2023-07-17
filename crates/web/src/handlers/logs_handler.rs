@@ -11,8 +11,8 @@ use futures::Stream;
 use tokio_stream::wrappers::{errors::BroadcastStreamRecvError, BroadcastStream};
 
 use crate::{
-    log_service::LogService,
     response::{ApiResponse, ApiResult},
+    service::LogService,
 };
 
 pub async fn api_logs(

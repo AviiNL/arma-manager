@@ -14,7 +14,7 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 </label>
 
                 <li class="mb-2 font-semibold text-xl">
-                    <a href="/" class="gap-1">
+                    <a href={Page::Home.path()} class="gap-1">
                         <img class="mask mask-squircle w-12" src="/logo.png" alt="Logo"/>
                         "Arma"<div class="visible">"Server"</div><div class="lg:visible invisible">"Manager"</div>
                     </a>

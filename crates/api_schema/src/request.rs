@@ -20,8 +20,15 @@ pub struct CreatePresetSchema {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct SetActivePresetSchema {
+pub struct SelectPresetSchema {
     pub id: i64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct UpdatePresetItemSchema {
+    pub id: i64,
+    pub enabled: Option<bool>,
+    pub position: Option<i64>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

@@ -22,7 +22,7 @@
 }
 
 .loading-cover {
-    @apply bg-neutral-focus text-primary-content bg-opacity-80 duration-200 ease-in-out text-lg;
+    @apply bg-base-300 text-primary-content bg-opacity-80 duration-200 ease-in-out text-lg;
     transition-property: transform, opacity, visibility;
     overflow-y: hidden;
     overscroll-behavior: contain;

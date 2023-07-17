@@ -2,7 +2,7 @@ use api_schema::{
     request::*,
     response::{Preset, PresetItem},
 };
-use sqlx::SqlitePool;
+use sqlx::{QueryBuilder, SqlitePool};
 
 use super::RepositoryResult;
 
@@ -63,7 +63,7 @@ impl PresetRepository {
 }
 
 impl PresetRepository {
-    pub async fn create(&self, input: &CreatePresetSchema) -> RepositoryResult<Preset> {
+    pub async fn create(&self, input: CreatePresetSchema) -> RepositoryResult<Preset> {
         let preset = sqlx::query_as!(
             SqlPreset,
             r#"
@@ -77,9 +77,6 @@ impl PresetRepository {
         )
         .fetch_one(&self.pool)
         .await?;
-
-        // set as selected
-        self.select(preset.id).await?;
 
         // clear items if they exist
         sqlx::query!(
@@ -123,7 +120,7 @@ impl PresetRepository {
         Ok(preset)
     }
 
-    async fn select(&self, id: i64) -> RepositoryResult<Preset> {
+    pub async fn select(&self, id: i64) -> RepositoryResult<Preset> {
         // unselect all
         sqlx::query(
             r#"
@@ -153,6 +150,27 @@ impl PresetRepository {
             selected: preset.selected.is_some(),
             items,
         })
+    }
+
+    pub async fn update_item(&self, schema: UpdatePresetItemSchema) -> RepositoryResult<PresetItem> {
+        let mut query = QueryBuilder::new("UPDATE preset_items SET ");
+
+        if let Some(enabled) = schema.enabled {
+            query.push(" enabled = ").push_bind(enabled);
+        }
+
+        if let Some(position) = schema.position {
+            query.push(" position = ").push_bind(position);
+        }
+
+        query.push(" WHERE id = ").push_bind(schema.id);
+
+        // returning
+        query.push(" RETURNING id, name, published_file_id, position, enabled");
+
+        let preset_item = query.build_query_as::<PresetItem>().fetch_one(&self.pool).await?;
+
+        Ok(preset_item)
     }
 }
 

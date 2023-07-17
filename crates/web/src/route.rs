@@ -1,8 +1,4 @@
-use axum::{
-    middleware,
-    routing::{get, post},
-    Router,
-};
+use axum::{middleware, routing::*, Router};
 
 use crate::{handlers::*, jwt_auth::auth, AppState};
 
@@ -23,9 +19,12 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/api/v1/logs/:channel", get(api_logs))
         .route("/api/v1/presets", get(get_presets))
         .route("/api/v1/presets", post(create_preset))
+        .route("/api/v1/presets", patch(select_preset))
+        .route("/api/v1/presets/item", patch(update_preset_item))
         // SSE routes
         .route("/sse/v1/status", get(sse_status_handler))
         .route("/sse/v1/logs", get(sse_logs))
+        .route("/sse/v1/presets", get(sse_preset_handler))
         .layer(auth_layer)
         // Public routes
         .route("/api/v1/auth/register", post(register_user_handler))

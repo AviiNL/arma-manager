@@ -5,11 +5,10 @@ use axum::{
     Extension, Router,
 };
 pub use config::*;
-use log_service::LogService;
 use repository::{PresetRepository, UserRepository, UserTokenRepository};
 use route::create_router;
+pub use service::*;
 use sqlx::sqlite::SqlitePoolOptions;
-use status_service::StatusService;
 use tower_http::cors::CorsLayer;
 
 pub async fn start() {
@@ -26,6 +25,7 @@ pub async fn start() {
     let preset_repository = PresetRepository::new(pool.clone());
 
     let status = StatusService::new();
+    let preset = PresetService::new(preset_repository.clone());
     let log = LogService::new();
 
     log.register("steamcmd", paths::get_log_path().join("steamcmd.log"));
@@ -47,6 +47,7 @@ pub async fn start() {
         .layer(Extension(user_token_repository))
         .layer(Extension(preset_repository))
         .layer(Extension(status))
+        .layer(Extension(preset))
         .layer(Extension(log))
         .layer(cors);
 
@@ -69,9 +70,8 @@ pub struct AppState {
 mod config;
 mod handlers;
 mod jwt_auth;
-mod log_service;
 mod model;
 mod repository;
 mod response;
 mod route;
-mod status_service;
+mod service;

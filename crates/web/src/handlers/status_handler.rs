@@ -9,7 +9,7 @@ use tokio_stream::wrappers::WatchStream;
 
 use crate::{
     response::{ApiResponse, ApiResult},
-    status_service::StatusService,
+    service::StatusService,
 };
 
 pub async fn sse_status_handler(

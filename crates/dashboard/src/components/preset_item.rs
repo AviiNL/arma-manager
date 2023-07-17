@@ -1,8 +1,10 @@
-use api_schema::response::PresetItem;
+use crate::app_state::AppState;
+use api_schema::{request::*, response::*};
 use leptos::*;
 
 #[component]
 pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
+    let app_state = use_context::<AppState>(cx).expect("there to be an AppState");
     let enabled = create_rw_signal(cx, item.enabled);
 
     let name = item.name.clone();
@@ -11,9 +13,15 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
         let value = value.clone();
         let name = name.clone();
         async move {
-            tracing::info!("Toggling [{}] {}: {:?}", id, name, value);
+            let api = app_state.api.get_untracked().expect("there to be an Api");
+            let schema = UpdatePresetItemSchema {
+                id,
+                enabled: Some(value),
+                position: None,
+            };
 
             // send new value to backend
+            api.set_preset_item_enabled(&schema).await.unwrap();
 
             enabled.set(value);
         }
@@ -21,12 +29,12 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
 
     view! { cx,
         <tr>
-            <td class="text-center m-none p-none">
+            <td class="text-center align-middle w-0">
             <label>
                 <input type="checkbox" class="checkbox" on:change={move |ev| toggle.dispatch(event_target_checked(&ev)) } checked={move || enabled.get()} />
             </label>
             </td>
-            <td class="w-full align-middle">{ item.name }</td>
+            <td class="align-middle whitespace-normal">{ item.name }</td>
         </tr>
     }
 }

@@ -100,7 +100,7 @@
 }
 
 .loading-cover {
-  background-color: hsl(var(--nf, var(--n)) / var(--tw-bg-opacity));
+  background-color: hsl(var(--b3, var(--b2)) / var(--tw-bg-opacity));
   --tw-bg-opacity: 0.8;
   font-size: 1.125rem;
   line-height: 1.75rem;
@@ -3094,10 +3094,6 @@ html {
   margin-top: 1rem;
 }
 
-.block {
-  display: block;
-}
-
 .inline-block {
   display: inline-block;
 }
@@ -3134,8 +3130,8 @@ html {
   height: 100vh;
 }
 
-.min-h-0 {
-  min-height: 0px;
+.w-0 {
+  width: 0px;
 }
 
 .w-1 {
@@ -3186,6 +3182,10 @@ html {
   max-width: 64rem;
 }
 
+.max-w-full {
+  max-width: 100%;
+}
+
 .max-w-md {
   max-width: 28rem;
 }
@@ -3200,6 +3200,10 @@ html {
 
 .grow {
   flex-grow: 1;
+}
+
+.table-fixed {
+  table-layout: fixed;
 }
 
 .resize-none {
@@ -3236,10 +3240,6 @@ html {
   margin-bottom: calc(1rem * var(--tw-space-y-reverse));
 }
 
-.overflow-auto {
-  overflow: auto;
-}
-
 .overflow-hidden {
   overflow: hidden;
 }
@@ -3252,6 +3252,10 @@ html {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.whitespace-normal {
+  white-space: normal;
 }
 
 .rounded-full {
