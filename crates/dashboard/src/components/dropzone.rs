@@ -26,9 +26,6 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
         spawn_local(async move {
             let api = api.get_untracked().expect("api to exist");
 
-            // I guess we could just always do this, if we're already there, this hopefully just does nothing
-            use_navigate(cx)("/console/presets", Default::default()).expect("Presets route");
-
             loading.set(Loading::Loading(Some("Processing files...")));
 
             // called when files are dropped on zone
@@ -42,7 +39,8 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
                 let arr: Uint8Array = Uint8Array::new(&jsval);
                 let data: Vec<u8> = arr.to_vec();
 
-                validate_and_upload(&api, &file.name(), data).await.unwrap(); // TODO: handle errors
+                validate_and_upload(cx, &api, &file.name(), data).await.unwrap();
+                // TODO: handle errors
             }
 
             loading.set(Loading::Ready);
@@ -64,6 +62,7 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
 }
 
 async fn validate_and_upload(
+    cx: Scope,
     api: &AuthorizedApi,
     name: &str,
     buffer: Vec<u8>,
@@ -79,6 +78,10 @@ async fn validate_and_upload(
         if crate::preset_parser::is_preset(&data) {
             let data = crate::preset_parser::parse(&data)?;
             api.post_preset(&data).await?;
+
+            // I guess we could just always do this, if we're already there, this hopefully just does nothing
+            use_navigate(cx)("/console/presets", Default::default()).expect("Presets route");
+
             return Ok(());
         }
     }

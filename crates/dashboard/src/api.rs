@@ -101,6 +101,16 @@ impl AuthorizedApi {
         self.send(Request::get(&url)).await
     }
 
+    pub async fn download_missing_mods(&self) -> Result<SimpleResponse> {
+        let url = format!("{}/arma/mods/download", self.url);
+        self.send(Request::get(&url)).await
+    }
+
+    pub async fn download_all_mods(&self) -> Result<SimpleResponse> {
+        let url = format!("{}/arma/mods/download/all", self.url);
+        self.send(Request::get(&url)).await
+    }
+
     pub async fn cancel_update_arma(&self) -> Result<SimpleResponse> {
         let url = format!("{}/arma/cancel_update", self.url);
         self.send(Request::get(&url)).await

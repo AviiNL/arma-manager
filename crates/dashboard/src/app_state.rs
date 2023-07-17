@@ -98,7 +98,7 @@ impl AppState {
                     // deffo confirmed signed in at this point, so we can load everything else in parallel
                     set_status(cx, &api, &status_signal).await;
                     setup_logs(cx, &api, &log_signal).await;
-                    setup_presets(cx, &api, &preset_signal).await;
+                    setup_presets(cx, &api, &preset_signal, &status_signal).await;
 
                     // only do this if we are on Login page
                     if route.path() == crate::pages::Page::Login.path().trim_start_matches("/") {
@@ -207,15 +207,39 @@ async fn setup_logs(cx: Scope, api: &AuthorizedApi, log_signal: &RwSignal<LogDat
     api.add_abort_signal(abort_signal);
 }
 
-async fn setup_presets(cx: Scope, api: &AuthorizedApi, preset_signal: &RwSignal<PresetList>) {
-    let api = api.clone();
+async fn setup_presets(
+    cx: Scope,
+    api: &AuthorizedApi,
+    preset_signal: &RwSignal<PresetList>,
+    status: &RwSignal<Option<Status>>,
+) {
+    let aapi = api.clone();
+    let status = status.clone();
 
     if let Ok(presets) = api.get_presets().await {
         preset_signal.set(presets);
     }
 
-    let preset_signal = preset_signal.clone();
+    let presets = preset_signal.clone();
+    create_resource(
+        cx,
+        move || status.get(),
+        move |status| {
+            let api = aapi.clone();
+            async move {
+                tracing::info!("Updating presets");
+                if let Some(state) = status {
+                    if state.steamcmd != api_schema::response::State::Stopped {
+                        return;
+                    }
+                }
+                let new_presets = api.get_presets().await.unwrap();
+                presets.set(new_presets);
+            }
+        },
+    );
 
+    let presets = preset_signal.clone();
     let abort_signal = create_sse(
         cx,
         "presets",
@@ -227,7 +251,7 @@ async fn setup_presets(cx: Scope, api: &AuthorizedApi, preset_signal: &RwSignal<
                     return;
                 };
 
-                preset_signal.update(|list| {
+                presets.update(|list| {
                     let mut found = false;
                     list.iter_mut().for_each(|p| {
                         if p.id == preset.id {
@@ -247,7 +271,7 @@ async fn setup_presets(cx: Scope, api: &AuthorizedApi, preset_signal: &RwSignal<
                     return;
                 };
 
-                preset_signal.update(|list| {
+                presets.update(|list| {
                     list.iter_mut().for_each(|preset| {
                         preset.selected = false;
                         if preset.id == id {
@@ -263,7 +287,7 @@ async fn setup_presets(cx: Scope, api: &AuthorizedApi, preset_signal: &RwSignal<
                 };
 
                 // ew?
-                preset_signal.update(|list| {
+                presets.update(|list| {
                     list.iter_mut().for_each(|p| {
                         p.items.iter_mut().for_each(|i| {
                             if i.id == item.id {

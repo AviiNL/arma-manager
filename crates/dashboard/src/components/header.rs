@@ -63,9 +63,7 @@ pub fn Header(cx: Scope) -> impl IntoView {
 
                 <div class="order-last">
 
-                    <div class="dropdown dropdown-end">
-                        <ThemeSelect />
-                    </div>
+                    <ThemeSelect />
 
                     <div class="dropdown dropdown-end ml-4">
                         <label tabindex="0" class="btn btn-ghost btn-circle avatar">

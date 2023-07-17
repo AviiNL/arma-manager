@@ -5,14 +5,20 @@ use crate::api::AuthorizedApi;
 
 #[derive(Clone, Default)]
 pub struct Progress {
-    value: i64,
-    max: i64,
+    pub value: u64,
+    pub max: u64,
 }
 
 impl Progress {
-    pub fn update(&mut self, value: i64, max: i64) {
+    pub fn update(&mut self, value: u64, max: u64) {
         self.value = value;
         self.max = max;
+    }
+
+    pub fn update_from_line(&mut self, line: &str) {
+        if let Some((value, max)) = extract_progress(line) {
+            self.update(value, max);
+        }
     }
 }
 
@@ -40,4 +46,13 @@ pub fn ProgressBar(cx: Scope, values: RwSignal<Progress>) -> impl IntoView {
             }
         }}
     }
+}
+
+fn extract_progress(s: &str) -> Option<(u64, u64)> {
+    let split = s.rsplit_once(" / ")?;
+
+    Some((
+        split.0.rsplit_once("(")?.1.parse::<u64>().ok()?,
+        split.1.split_once(")")?.0.parse::<u64>().ok()?,
+    ))
 }

@@ -44,6 +44,32 @@ impl PresetRepository {
         Ok(result)
     }
 
+    pub async fn get_selected_preset(&self) -> RepositoryResult<Option<Preset>> {
+        let preset = sqlx::query_as!(
+            SqlPreset,
+            r#"
+            SELECT id, name, selected
+            FROM presets
+            WHERE selected = ?
+            "#,
+            true
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        if let Some(preset) = preset {
+            let items = self.get_items(preset.id).await?;
+            Ok(Some(Preset {
+                id: preset.id,
+                name: preset.name,
+                selected: true,
+                items,
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
     async fn get_items(&self, preset_id: i64) -> RepositoryResult<Vec<PresetItem>> {
         let mut items: Vec<PresetItem> = sqlx::query_as(
             r#"

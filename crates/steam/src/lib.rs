@@ -17,14 +17,14 @@ impl Account {
 
 #[derive(Debug)]
 pub struct AppUpdate {
-    app_id: u32,
+    app_id: u64,
     beta: Option<String>,
     beta_password: Option<String>,
     validate: bool,
 }
 
 impl AppUpdate {
-    pub fn new(app_id: u32) -> Self {
+    pub fn new(app_id: u64) -> Self {
         Self {
             app_id,
             beta: None,
@@ -53,6 +53,7 @@ pub struct Steam {
     login: Option<Account>,
     force_install_dir: Option<String>,
     app_update: Option<AppUpdate>,
+    workshop_download_item: Vec<(u64, i64)>, // app_id, published_file_id
 }
 
 impl Steam {
@@ -101,6 +102,11 @@ impl Steam {
         self
     }
 
+    pub fn workshop_download_item(mut self, app_id: u64, published_file_id: i64) -> Self {
+        self.workshop_download_item.push((app_id, published_file_id));
+        self
+    }
+
     pub fn run(self) -> anyhow::Result<ProcessControls> {
         if !paths::get_steam_path().join(BINARY_NAME).exists() {
             return Err(anyhow::anyhow!("Steam is not installed"));
@@ -134,6 +140,15 @@ impl Steam {
             }
 
             if app.validate {
+                process.arg("validate");
+            }
+        }
+
+        if !self.workshop_download_item.is_empty() {
+            for (app_id, published_file_id) in self.workshop_download_item {
+                process.arg("+workshop_download_item");
+                process.arg(app_id.to_string());
+                process.arg(published_file_id.to_string());
                 process.arg("validate");
             }
         }

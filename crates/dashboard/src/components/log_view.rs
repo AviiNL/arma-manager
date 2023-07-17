@@ -47,7 +47,7 @@ pub fn LogView(
     // clear log content when not visible
     create_effect(cx, move |_| {
         if !visible.get() {
-            log_content.set(String::new());
+            // log_content.set(String::new());
             if let Some(progress) = &progress {
                 progress.update(|p| p.update(0, 0));
             }
@@ -62,44 +62,36 @@ pub fn LogView(
 
         log_content.set(lines.join("\n"));
 
-        if let Some(progress) = &progress {
-            let Some(line_to_parse) = lines.last() else {
-                return; // no logs for this channel
-            };
-
-            if line_to_parse.contains("progress: ") {
-                let value = line_to_parse
-                    .split("progress: ")
-                    .nth(1)
-                    .unwrap()
-                    .split(" (")
-                    .nth(1)
-                    .unwrap()
-                    .split(" / ")
-                    .nth(0)
-                    .unwrap()
-                    .parse::<i64>()
-                    .unwrap();
-
-                let max = line_to_parse
-                    .split("progress: ")
-                    .nth(1)
-                    .unwrap()
-                    .split(" / ")
-                    .nth(1)
-                    .unwrap()
-                    .split(")")
-                    .nth(0)
-                    .unwrap()
-                    .parse::<i64>()
-                    .unwrap();
-
-                progress.update(|p| p.update(value, max));
+        if let Some(progress) = progress {
+            if let Some(line) = lines.last() {
+                if line.contains("progress:") {
+                    progress.update(|p| p.update_from_line(line));
+                } else {
+                    // but only if it's not already 0,0
+                    if progress.get_untracked().value != 0 || progress.get_untracked().max != 0 {
+                        progress.update(|p| p.update(0, 0));
+                    }
+                }
             }
         }
     });
 
+    let clear_log = create_action(cx, move |()| {
+        let log_data = log_data.clone();
+        async move {
+            log_data.update(move |log| {
+                log.insert(channel.to_string(), vec![]);
+            });
+        }
+    });
+
     view! { cx,
+        <div class="relative h-full">
         <textarea class="textarea log h-full w-full resize-none focus:outline-none shadow-inner-xl bg-transparent" readonly node_ref=element>{move || log_content.get()}</textarea>
+        <button class="btn btn-circle btn-xs btn-ghost hover:glass absolute top-0 right-4 m-2" on:click=move |_| clear_log.dispatch(()) title="Clear log">
+            <i class="fa fa-eraser" />
+        </button>
+
+        </div>
     }
 }
