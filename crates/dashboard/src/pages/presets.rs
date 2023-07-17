@@ -1,4 +1,7 @@
-use api_schema::response::{Preset, State};
+use api_schema::{
+    request::SelectPresetSchema,
+    response::{Preset, State},
+};
 use leptos::*;
 
 use crate::{
@@ -18,15 +21,14 @@ pub fn Presets(cx: Scope) -> impl IntoView {
 
     create_effect(cx, move |_| {
         let presets = presets.get();
-        loading.set(Loading::Loading(Some("Loading Presets..."))); // doesnt show up?
+        loading.set(Loading::Loading(Some("Loading Presets...")));
 
-        // find the preset with the selected flag
         if let Some(preset) = presets.iter().find(|preset| preset.selected) {
             let mut preset = preset.clone();
-            // we need to sort the items inside preset by position
             preset.items.sort_by(|a, b| a.position.cmp(&b.position));
             selected_preset.set(Some(preset));
         };
+
         loading.set(Loading::Ready);
     });
 
@@ -42,7 +44,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
 
             let api = app_state.api.get_untracked().expect("there to be an Api");
 
-            let schema = api_schema::request::SelectPresetSchema { id };
+            let schema = SelectPresetSchema { id };
 
             api.activate_preset(&schema).await.unwrap();
         }
@@ -115,7 +117,6 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                                 </tr>
                             }.into_view(cx)
                         }}
-
                     </tbody>
                 </table>
             </div>
