@@ -106,8 +106,8 @@ impl AuthorizedApi {
         self.send(Request::get(&url)).await
     }
 
-    pub async fn download_all_mods(&self) -> Result<SimpleResponse> {
-        let url = format!("{}/arma/mods/download/all", self.url);
+    pub async fn force_check(&self) -> Result<SimpleResponse> {
+        let url = format!("{}/arma/mods/check", self.url);
         self.send(Request::get(&url)).await
     }
 

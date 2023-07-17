@@ -17,7 +17,7 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/api/v1/arma/stop", get(stop_arma))
         .route("/api/v1/arma/restart", get(restart_arma))
         .route("/api/v1/arma/mods/download", get(download_missing_mods))
-        //.route("/api/v1/arma/mods/download/all", get(restart_arma))
+        .route("/api/v1/arma/mods/check", get(force_check))
         .route("/api/v1/logs/:channel", get(api_logs))
         .route("/api/v1/presets", get(get_presets))
         .route("/api/v1/presets", post(create_preset))

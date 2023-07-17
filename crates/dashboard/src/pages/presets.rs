@@ -53,6 +53,11 @@ pub fn Presets(cx: Scope) -> impl IntoView {
         api.download_missing_mods().await.unwrap();
     });
 
+    let force_check = create_action(cx, move |()| async move {
+        let api = app_state.api.get_untracked().expect("there to be an Api");
+        api.force_check().await.unwrap();
+    });
+
     view! { cx,
         <div class="card w-full p-6 bg-base-100 shadow-xl mt-2 mb-4">
             <div class="flex justify-between text-sm font-semibold">
@@ -72,7 +77,6 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                         <div class="btn-group">
                             <button
                                 class="btn btn-ghost hover:glass"
-                                onFocus="document.activeElement.blur();"
                                 onClick="document.activeElement.blur();"
                                 on:click=move |_| download_missing_mods.dispatch(())
                                 title="Download missing">
@@ -88,9 +92,8 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                                 <a
                                     class="p-2 rounded-box whitespace-nowrap hover:glass"
                                     href="#"
-                                    onFocus="document.activeElement.blur();"
                                     onClick="document.activeElement.blur();"
-                                    // on:click=move |_| download_all_mods.dispatch(())
+                                    on:click=move |_| force_check.dispatch(())
                                     title="Force Check">
                                     "Force Check"
                                 </a>

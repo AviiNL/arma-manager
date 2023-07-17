@@ -227,7 +227,6 @@ async fn setup_presets(
         move |status| {
             let api = aapi.clone();
             async move {
-                tracing::info!("Updating presets");
                 if let Some(state) = status {
                     if state.steamcmd != api_schema::response::State::Stopped {
                         return;
