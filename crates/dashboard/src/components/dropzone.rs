@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use api_schema::response::{State, Status};
+use api_schema::response::{Preset, State, Status};
 use js_sys::Uint8Array;
 use leptos::{html::*, *};
 use leptos_router::*;
@@ -39,13 +39,10 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
                 // if it's a preset, we need to parse it and then post it to the server
                 // but it can also be a mission or a standalone mod, so we need to figure out what to do with those
                 let jsval = js_future.await.unwrap();
-                let arr: Uint8Array = Uint8Array::new(jsval);
+                let arr: Uint8Array = Uint8Array::new(&jsval);
                 let data: Vec<u8> = arr.to_vec();
 
-                validate_and_upload(data).await.unwrap(); // TODO: handle errors
-
-                // all this shit needs to get split up
-                let preset = api.post_preset(&data).await.unwrap();
+                validate_and_upload(&api, &file.name(), data).await.unwrap(); // TODO: handle errors
             }
 
             loading.set(Loading::Ready);
@@ -66,10 +63,33 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
     .into_view(cx)
 }
 
-async fn validate_and_upload(buffer: Vec<u8>) -> Result<(), Box<dyn std::error::Error>> {
+async fn validate_and_upload(
+    api: &AuthorizedApi,
+    name: &str,
+    buffer: Vec<u8>,
+) -> Result<(), Box<dyn std::error::Error>> {
     // do this based off of the uploaded filename? that'll catch like 99% of the cases
 
-    let data = crate::preset_parser::parse(&data).unwrap();
+    tracing::info!("Processing {}", name);
+
+    // If it parses as a string, we'll treat it as a preset (for now)
+    // We'll add a new function to actually validate and return some Enum with possible types,
+    // eg Preset, Mission, Mod, etc
+    if let Ok(data) = String::from_utf8(buffer) {
+        if crate::preset_parser::is_preset(&data) {
+            let data = crate::preset_parser::parse(&data)?;
+            api.post_preset(&data).await?;
+            return Ok(());
+        }
+    }
+
+    tracing::error!("Unknown file type");
 
     Ok(())
 }
+
+// enum UploadFileTypes {
+//     Preset(String),             // the contents of the html file
+//     Mission((String, Vec<u8>)), // Name of the mission and the contents of the pbo
+//     Mod,                        // zip file? this might actually also be .pbo
+// }
