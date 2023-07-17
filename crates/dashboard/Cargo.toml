@@ -41,6 +41,7 @@ thiserror = "1"
 scraper = "0.17.1"
 wasm-bindgen-futures = "0.4.37"
 merge-streams = "0.1.2"
+js-sys = "0.3.64"
 
 [features]
 default = []

@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use api_schema::response::{State, Status};
+use js_sys::Uint8Array;
 use leptos::{html::*, *};
 use leptos_router::*;
 use leptos_use::*;
@@ -32,10 +33,16 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
 
             // called when files are dropped on zone
             for file in event.files {
-                let js_future = wasm_bindgen_futures::JsFuture::from(file.text());
-                let data = js_future.await.unwrap().as_string().unwrap();
+                let js_future = wasm_bindgen_futures::JsFuture::from(file.array_buffer());
 
-                let data = crate::preset_parser::parse(&data).unwrap();
+                // at this point in time we need to figure out what kind of file it is...
+                // if it's a preset, we need to parse it and then post it to the server
+                // but it can also be a mission or a standalone mod, so we need to figure out what to do with those
+                let jsval = js_future.await.unwrap();
+                let arr: Uint8Array = Uint8Array::new(jsval);
+                let data: Vec<u8> = arr.to_vec();
+
+                validate_and_upload(data).await.unwrap(); // TODO: handle errors
 
                 // all this shit needs to get split up
                 let preset = api.post_preset(&data).await.unwrap();
@@ -57,4 +64,12 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
         </div>
     }
     .into_view(cx)
+}
+
+async fn validate_and_upload(buffer: Vec<u8>) -> Result<(), Box<dyn std::error::Error>> {
+    // do this based off of the uploaded filename? that'll catch like 99% of the cases
+
+    let data = crate::preset_parser::parse(&data).unwrap();
+
+    Ok(())
 }
