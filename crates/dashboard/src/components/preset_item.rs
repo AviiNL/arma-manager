@@ -34,7 +34,13 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
                 <input type="checkbox" class="checkbox" on:change={move |ev| toggle.dispatch(event_target_checked(&ev)) } checked={move || enabled.get()} />
             </label>
             </td>
-            <td class="align-middle whitespace-normal">{ item.name }</td>
+            <td class="align-middle whitespace-normal">
+            {if item.exists {
+                view! { cx, <p class="text-primary-content">{item.name}</p> }.into_view(cx)
+            } else {
+                view! { cx, <s>{item.name}</s> }.into_view(cx)
+            }}
+            </td>
         </tr>
     }
 }

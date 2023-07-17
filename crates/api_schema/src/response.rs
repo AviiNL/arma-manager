@@ -72,6 +72,8 @@ pub struct PresetItem {
     pub published_file_id: i64,
     pub position: i64,
     pub enabled: bool,
+    #[cfg_attr(feature = "ssr", sqlx(skip))]
+    pub exists: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

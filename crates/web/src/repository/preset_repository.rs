@@ -45,18 +45,21 @@ impl PresetRepository {
     }
 
     async fn get_items(&self, preset_id: i64) -> RepositoryResult<Vec<PresetItem>> {
-        let items = sqlx::query_as!(
-            PresetItem,
+        let mut items: Vec<PresetItem> = sqlx::query_as(
             r#"
             SELECT id, name, published_file_id, position, enabled
             FROM preset_items
             WHERE preset_id = ?
             ORDER BY position ASC
             "#,
-            preset_id
         )
+        .bind(preset_id)
         .fetch_all(&self.pool)
         .await?;
+
+        for item in &mut items {
+            item.exists = arma::mod_exists(item.published_file_id);
+        }
 
         Ok(items)
     }
@@ -91,21 +94,22 @@ impl PresetRepository {
         let mut items = vec![];
         // add items
         for item in &input.items {
-            let item = sqlx::query_as!(
-                PresetItem,
+            let mut item: PresetItem = sqlx::query_as(
                 r#"
                 INSERT INTO preset_items (preset_id, name, published_file_id, position, enabled)
                 VALUES (?, ?, ?, ?, ?)
                 RETURNING id, name, published_file_id, position, enabled
                 "#,
-                preset.id,
-                item.name,
-                item.published_file_id,
-                item.position,
-                item.enabled
             )
+            .bind(preset.id)
+            .bind(item.name.clone())
+            .bind(item.published_file_id)
+            .bind(item.position)
+            .bind(item.enabled)
             .fetch_one(&self.pool)
             .await?;
+
+            item.exists = arma::mod_exists(item.published_file_id);
 
             items.push(item);
         }
@@ -168,7 +172,8 @@ impl PresetRepository {
         // returning
         query.push(" RETURNING id, name, published_file_id, position, enabled");
 
-        let preset_item = query.build_query_as::<PresetItem>().fetch_one(&self.pool).await?;
+        let mut preset_item = query.build_query_as::<PresetItem>().fetch_one(&self.pool).await?;
+        preset_item.exists = arma::mod_exists(preset_item.published_file_id);
 
         Ok(preset_item)
     }

@@ -22,6 +22,7 @@ pub enum Page {
     Profile,
     Logs,
     Presets,
+    Missions,
 }
 
 impl Page {
@@ -34,6 +35,7 @@ impl Page {
             Self::Profile => "profile",
             Self::Logs => "logs",
             Self::Presets => "presets",
+            Self::Missions => "missions",
         }
     }
 }

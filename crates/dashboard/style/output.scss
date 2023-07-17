@@ -3312,6 +3312,10 @@ html {
   background-color: transparent;
 }
 
+.stroke-primary-content {
+  stroke: hsl(var(--pc));
+}
+
 .p-1 {
   padding: 0.25rem;
 }

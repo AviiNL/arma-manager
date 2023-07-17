@@ -41,7 +41,7 @@ pub fn ThemeSelect(cx: Scope) -> impl IntoView {
         LocalStorage::set("theme", next).expect("LocalStorage::set");
     };
 
-    let on_class = Signal::derive(cx, move || {
+    let class = Signal::derive(cx, move || {
         let theme = theme.get();
         match theme {
             Theme::Default => "fa-solid fa-circle-half-stroke",
@@ -53,7 +53,7 @@ pub fn ThemeSelect(cx: Scope) -> impl IntoView {
 
     view! { cx,
         <label on:click=on_input class="btn btn-ghost btn-circle swap swap-rotate text-2xl">
-            <i class={move || on_class.get()} title={move || format!("{:?}", theme.get())}></i>
+            <i class={move || class.get()} title={move || format!("{:?}", theme.get())}></i>
         </label>
     }
 }
