@@ -60,6 +60,34 @@ pub async fn update_preset_item(
     Ok(ApiResponse::new(item))
 }
 
+pub async fn blacklist_item(
+    Extension(preset_service): Extension<Arc<PresetService>>,
+    Json(input): Json<BlacklistItemSchema>,
+) -> ApiResult<impl IntoResponse> {
+    preset_service
+        .blacklist_item(input)
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    Ok(ApiResponse::new(SimpleResponse {
+        response: "OK".to_string(),
+    }))
+}
+
+pub async fn unblacklist_item(
+    Extension(preset_service): Extension<Arc<PresetService>>,
+    Json(input): Json<BlacklistItemSchema>,
+) -> ApiResult<impl IntoResponse> {
+    preset_service
+        .unblacklist_item(input)
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    Ok(ApiResponse::new(SimpleResponse {
+        response: "OK".to_string(),
+    }))
+}
+
 pub async fn sse_preset_handler(
     Extension(presets): Extension<Arc<PresetService>>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {

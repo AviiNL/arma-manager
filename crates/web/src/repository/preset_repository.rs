@@ -227,6 +227,37 @@ impl PresetRepository {
     }
 }
 
+impl PresetRepository {
+    // blacklist
+    pub async fn blacklist_item(&self, published_file_id: i64) -> RepositoryResult<()> {
+        sqlx::query!(
+            r#"
+            INSERT INTO blacklist (published_file_id)
+            VALUES (?)
+            "#,
+            published_file_id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
+    // unblacklist
+    pub async fn unblacklist_item(&self, published_file_id: i64) -> RepositoryResult<()> {
+        sqlx::query!(
+            r#"
+            DELETE FROM blacklist WHERE published_file_id = ?
+            "#,
+            published_file_id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+}
+
 struct SqlPreset {
     id: i64,
     name: String,

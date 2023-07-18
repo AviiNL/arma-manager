@@ -156,6 +156,16 @@ impl AuthorizedApi {
         self.send(Request::patch(&url).json(preset)?).await
     }
 
+    pub async fn blacklist_item(&self, item: &BlacklistItemSchema) -> Result<SimpleResponse> {
+        let url = format!("{}/presets/item/blacklist", self.url);
+        self.send(Request::post(&url).json(item)?).await
+    }
+
+    pub async fn unblacklist_item(&self, item: &BlacklistItemSchema) -> Result<SimpleResponse> {
+        let url = format!("{}/presets/item/blacklist", self.url);
+        self.send(Request::delete(&url).json(item)?).await
+    }
+
     pub fn token(&self) -> &ApiToken {
         &self.token
     }

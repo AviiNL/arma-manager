@@ -83,4 +83,6 @@ pub enum PresetUpdate {
     Updated(PresetItem),
     Removed(i64),
     Selected(i64),
+    Blacklisted(i64),
+    Unblacklisted(i64),
 }

@@ -11,6 +11,16 @@
     }
 }
 
+tr.blacklist {
+    @apply bg-error;
+    /* background-image: repeating-linear-gradient(135deg, hsl(var(--b1)), hsl(var(--b1)) 13px, hsl(var(--er)) 13px, hsl(var(--er)) 14px); */
+
+    td {
+        @apply text-error-content line-through;
+        background-color: transparent !important;
+    }
+}
+
 textarea.log {
     font-family: Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
     line-height: 1.25rem;

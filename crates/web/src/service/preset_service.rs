@@ -57,4 +57,30 @@ impl PresetService {
 
         Ok(item)
     }
+
+    // blacklist_item
+    pub async fn blacklist_item(&self, schema: BlacklistItemSchema) -> Result<(), Box<dyn std::error::Error>> {
+        self.repository.blacklist_item(schema.published_file_id).await?;
+
+        let _ = self
+            .tx
+            .send(Ok(Event::default().event("blacklist").data(serde_json::to_string(
+                &PresetUpdate::Blacklisted(schema.published_file_id),
+            )?)));
+
+        Ok(())
+    }
+
+    // unblacklist_item
+    pub async fn unblacklist_item(&self, schema: BlacklistItemSchema) -> Result<(), Box<dyn std::error::Error>> {
+        self.repository.unblacklist_item(schema.published_file_id).await?;
+
+        let _ = self
+            .tx
+            .send(Ok(Event::default().event("unblacklist").data(serde_json::to_string(
+                &PresetUpdate::Unblacklisted(schema.published_file_id),
+            )?)));
+
+        Ok(())
+    }
 }

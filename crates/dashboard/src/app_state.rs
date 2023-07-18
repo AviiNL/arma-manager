@@ -240,7 +240,13 @@ async fn setup_presets(
     let abort_signal = create_sse(
         cx,
         "presets",
-        vec!["create".to_string(), "select".to_string(), "update".to_string()],
+        vec![
+            "create".to_string(),
+            "select".to_string(),
+            "update".to_string(),
+            "blacklist".to_string(),
+            "unblacklist".to_string(),
+        ],
         move |event, data: PresetUpdate| match event.as_str() {
             "create" => {
                 let PresetUpdate::Created(preset) = data else {
@@ -295,6 +301,42 @@ async fn setup_presets(
                     });
                 });
                 loading.set(Loading::Ready);
+            }
+            "blacklist" => {
+                tracing::info!("Blacklisting...");
+                let PresetUpdate::Blacklisted(published_file_id) = data else {
+                    tracing::error!("Incompatible data for event: {}", event);
+                    return;
+                };
+
+                presets.update(|list| {
+                    list.iter_mut().for_each(|p| {
+                        p.items.iter_mut().for_each(|i| {
+                            if i.published_file_id == published_file_id {
+                                tracing::info!("Blacklisting {}", i.name);
+                                i.blacklisted = true;
+                            }
+                        });
+                    });
+                });
+            }
+            "unblacklist" => {
+                tracing::info!("UnBlacklisting...");
+                let PresetUpdate::Unblacklisted(published_file_id) = data else {
+                    tracing::error!("Incompatible data for event: {}", event);
+                    return;
+                };
+
+                presets.update(|list| {
+                    list.iter_mut().for_each(|p| {
+                        p.items.iter_mut().for_each(|i| {
+                            if i.published_file_id == published_file_id {
+                                tracing::info!("UnBlacklisting {}", i.name);
+                                i.blacklisted = false;
+                            }
+                        });
+                    });
+                });
             }
             _ => tracing::error!("Unknown preset event: {}", event),
         },

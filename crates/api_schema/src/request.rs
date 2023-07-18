@@ -38,3 +38,8 @@ pub struct PresetItemSchema {
     pub enabled: bool,
     pub position: i64,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct BlacklistItemSchema {
+    pub published_file_id: i64,
+}
