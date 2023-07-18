@@ -221,8 +221,6 @@ impl PresetRepository {
         let mut preset_item = query.build_query_as::<PresetItem>().fetch_one(&self.pool).await?;
         preset_item.exists = arma::mod_exists(preset_item.published_file_id);
 
-        dbg!(&preset_item);
-
         Ok(preset_item)
     }
 }

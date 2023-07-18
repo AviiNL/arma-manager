@@ -2,6 +2,7 @@ use api_schema::{
     request::SelectPresetSchema,
     response::{Preset, State},
 };
+use gloo_storage::{LocalStorage, Storage};
 use leptos::*;
 
 use crate::{
@@ -17,6 +18,12 @@ pub fn Presets(cx: Scope) -> impl IntoView {
 
     let status = app_state.status.clone();
 
+    let hide_blacklisted = create_rw_signal(cx, false);
+    create_effect(cx, move |_| {
+        let value = LocalStorage::get("hide_blacklisted").unwrap_or_default();
+        hide_blacklisted.set(value);
+    });
+
     let selected_preset = create_rw_signal(cx, None::<Preset>);
     let search = create_rw_signal(cx, String::default());
 
@@ -26,11 +33,15 @@ pub fn Presets(cx: Scope) -> impl IntoView {
             return None;
         };
 
+        let mut preset = preset.clone();
+
+        if hide_blacklisted.get() {
+            preset.items = preset.items.into_iter().filter(|item| !item.blacklisted).collect();
+        }
+
         if search.is_empty() {
             return Some(preset);
         }
-
-        let mut preset = preset.clone();
 
         preset.items = preset
             .items
@@ -73,6 +84,12 @@ pub fn Presets(cx: Scope) -> impl IntoView {
         }
     });
 
+    let toggle_hide_blacklisted = create_action(cx, move |()| async move {
+        let value = hide_blacklisted.get();
+        LocalStorage::set("hide_blacklisted", !value).unwrap();
+        hide_blacklisted.set(!value);
+    });
+
     let download_missing_mods = create_action(cx, move |()| async move {
         let api = app_state.api.get_untracked().expect("there to be an Api");
         api.download_missing_mods().await.unwrap();
@@ -91,8 +108,8 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                         <span class="truncate">
                         {move || {
                             if let Some(active_preset) = selected_preset.get() {
-                                let enabled_count = active_preset.items.iter().filter(|item| item.enabled).count();
-                                let item_count = active_preset.items.len();
+                                let enabled_count = active_preset.items.iter().filter(|item| item.enabled && !item.blacklisted).count();
+                                let item_count = active_preset.items.iter().filter(|item| !item.blacklisted).count();
                                 format!("{} ({}/{})", active_preset.name, enabled_count, item_count)
                             } else {
                                 "No Preset Selected".to_string()
@@ -113,6 +130,28 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                 </div>
 
                 <div class="order-last flex flex-none gap-2">
+                    <div class="form-control">
+                        // show/hide blacklisted items button
+                        <button class="btn btn-ghost" on:click={move |_| toggle_hide_blacklisted.dispatch(())}>
+                            {move ||
+                                if let Some(active_preset) = selected_preset.get() {
+                                    let blacklist_count = active_preset.items.iter().filter(|item| item.blacklisted).count();
+                                    if hide_blacklisted.get() {
+                                        format!("Show Blacklisted ({})", blacklist_count)
+                                    } else {
+                                        format!("Hide Blacklisted ({})", blacklist_count)
+                                    }
+                                } else {
+                                    if hide_blacklisted.get() {
+                                        format!("Show Blacklisted")
+                                    } else {
+                                        format!("Hide Blacklisted")
+                                    }
+                                }
+                            }
+                        </button>
+
+                    </div>
                     <div class="form-control">
                         <input type="text" placeholder="Search…" class="input input-bordered" prop:value={move || search.get()} on:input=move |ev| search.set(event_target_value(&ev)) />
                     </div>
