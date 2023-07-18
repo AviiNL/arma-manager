@@ -85,7 +85,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
     });
 
     let toggle_hide_blacklisted = create_action(cx, move |()| async move {
-        let value = hide_blacklisted.get();
+        let value = hide_blacklisted.get_untracked();
         LocalStorage::set("hide_blacklisted", !value).unwrap();
         hide_blacklisted.set(!value);
     });
