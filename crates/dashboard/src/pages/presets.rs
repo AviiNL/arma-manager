@@ -117,13 +117,14 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                         }}</span>
                         <i class="fa fa-caret-down"></i>
                     </label>
-                    <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-52">
+                    <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-fit">
                         <For
                             each={move || presets.get()}
                             key={|item| item.id}
                             view={move |cx, item| view! { cx,
-                                <li>
+                                <li class="whitespace-nowrap">
                                     <a onClick="document.activeElement.blur();" on:click=move |_| select_preset.dispatch(item.id)>{item.name}</a>
+                                    //  TODO: Wrap in flex and add delete button, preferably with some confirmation
                                 </li>
                             }.into_view(cx)} />
                     </ul>
