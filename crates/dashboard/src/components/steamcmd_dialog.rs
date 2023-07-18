@@ -9,7 +9,6 @@ pub fn SteamCmdDialog(cx: Scope) -> impl IntoView {
     let status = app_state.status.clone();
     let api = app_state.api.clone();
 
-    let checked = create_rw_signal(cx, false);
     let progress = create_rw_signal(cx, Progress::default());
 
     let cancel_update_arma = create_action(cx, move |_| {
@@ -26,9 +25,11 @@ pub fn SteamCmdDialog(cx: Scope) -> impl IntoView {
         }
     });
 
-    create_effect(cx, move |_| {
+    let checked = Signal::derive(cx, move || {
         if let Some(status) = status.get() {
-            checked.set(status.steamcmd != State::Stopped);
+            status.steamcmd != State::Stopped
+        } else {
+            false
         }
     });
 
@@ -39,7 +40,7 @@ pub fn SteamCmdDialog(cx: Scope) -> impl IntoView {
                 <h3 class="font-bold text-lg">"steamcmd.log"</h3>
                 <div class="grow shrink bg-base-200 shadow-inner">
                 <ClientOnly>
-                    <LogView channel="steamcmd" visible=checked progress=progress />
+                    <LogView channel="steamcmd" visible=checked.into() progress=progress />
                 </ClientOnly>
             </div>
             <ProgressBar values=progress />

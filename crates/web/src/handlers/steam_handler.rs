@@ -85,7 +85,7 @@ pub async fn download_missing_mods(
     let mods = preset
         .items
         .iter()
-        .filter(|m| !m.exists)
+        .filter(|m| m.enabled && !m.exists)
         .map(|m| m.published_file_id)
         .collect::<Vec<_>>();
 
@@ -143,7 +143,7 @@ pub async fn force_check(
         return Err(ErrorResponse::new("No preset selected").into());
     };
 
-    for published_file_id in preset.items.iter().map(|m| m.published_file_id) {
+    for published_file_id in preset.items.iter().filter(|m| m.enabled).map(|m| m.published_file_id) {
         steam = steam.workshop_download_item(ARMA_CLIENT_APP_ID, published_file_id);
     }
 

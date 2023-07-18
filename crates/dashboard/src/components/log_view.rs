@@ -14,7 +14,7 @@ pub fn is_mounted(cx: Scope) -> impl Fn() -> bool {
 pub fn LogView(
     cx: Scope,
     channel: &'static str,
-    visible: RwSignal<bool>,
+    visible: MaybeSignal<bool>,
     #[prop(optional)] progress: Option<RwSignal<Progress>>,
 ) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");

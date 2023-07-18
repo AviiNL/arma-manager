@@ -88,11 +88,27 @@ pub fn Presets(cx: Scope) -> impl IntoView {
             <div class="flex justify-between text-sm font-semibold">
                 <div class="dropdown" title="Change Preset">
                     <label class="btn gap-1 normal-case btn-ghost" tabindex="0">
-                        <span class="truncate">{move || if let Some(active_preset) = selected_preset.get() { active_preset.name } else { "No Preset Selected".to_string() } }</span>
+                        <span class="truncate">
+                        {move || {
+                            if let Some(active_preset) = selected_preset.get() {
+                                let enabled_count = active_preset.items.iter().filter(|item| item.enabled).count();
+                                let item_count = active_preset.items.len();
+                                format!("{} ({}/{})", active_preset.name, enabled_count, item_count)
+                            } else {
+                                "No Preset Selected".to_string()
+                            }
+                        }}</span>
                         <i class="fa fa-caret-down"></i>
                     </label>
                     <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-52">
-                        <For each={move || presets.get()} key={|item| item.id} view={move |cx, item| view! { cx, <li><a onClick="document.activeElement.blur();" on:click=move |_| select_preset.dispatch(item.id)>{item.name}</a></li>}.into_view(cx)} />
+                        <For
+                            each={move || presets.get()}
+                            key={|item| item.id}
+                            view={move |cx, item| view! { cx,
+                                <li>
+                                    <a onClick="document.activeElement.blur();" on:click=move |_| select_preset.dispatch(item.id)>{item.name}</a>
+                                </li>
+                            }.into_view(cx)} />
                     </ul>
                 </div>
 
@@ -107,7 +123,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                                 class="btn btn-ghost hover:glass"
                                 onClick="document.activeElement.blur();"
                                 on:click=move |_| download_missing_mods.dispatch(())
-                                title="Download missing">
+                                title="Start Download">
                                 <i class="text-lg fa-brands fa-steam"></i>
                             </button>
                             <label tabindex="0" class="btn btn-ghost hover:glass w-4 rounded-r-lg">

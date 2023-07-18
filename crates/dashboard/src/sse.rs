@@ -22,9 +22,6 @@ where
 
     let url = format!("{}/{}?token={}", DEFAULT_SSE_URL, uri, api.token().token);
 
-    // BIG FUCKING TODO: Proper error handling!
-    // make T Result<T, err> in cb?
-
     let mut event_source = EventSource::new(&url).expect("EventSource::new");
     spawn_local(async move {
         let _ = event_source.state(); //keep-alive?
@@ -54,20 +51,6 @@ where
         }
 
         tracing::info!("SSE stopped");
-
-        // while let Some(Ok((event_type, msg))) = all_streams.next().await {
-        //     if rx.try_recv().is_ok() {
-        //         // i was hoping i could merge this with the streams
-        //         // and expect a None when to stop or something
-        //         tracing::info!("{}/{} Stopped", uri, event_type);
-        //         break;
-        //     } else {
-        //         tracing::error!("Sender dropped!");
-        //     }
-
-        //     let data = msg.data().as_string().unwrap();
-        //     cb(event_type, serde_json::from_str::<T>(&data).expect("this not to fail"));
-        // }
     });
 
     tx

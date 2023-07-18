@@ -98,7 +98,7 @@ impl AppState {
                     // deffo confirmed signed in at this point, so we can load everything else in parallel
                     set_status(cx, &api, &status_signal).await;
                     setup_logs(cx, &api, &log_signal).await;
-                    setup_presets(cx, &api, &preset_signal, &status_signal).await;
+                    setup_presets(cx, &api, &preset_signal, &status_signal, &loading_signal).await;
 
                     // only do this if we are on Login page
                     if route.path() == crate::pages::Page::Login.path().trim_start_matches("/") {
@@ -212,6 +212,7 @@ async fn setup_presets(
     api: &AuthorizedApi,
     preset_signal: &RwSignal<PresetList>,
     status: &RwSignal<Option<Status>>,
+    loading: &RwSignal<Loading>,
 ) {
     let aapi = api.clone();
     let status = status.clone();
@@ -239,6 +240,7 @@ async fn setup_presets(
     );
 
     let presets = preset_signal.clone();
+    let loading = loading.clone();
     let abort_signal = create_sse(
         cx,
         "presets",
@@ -286,6 +288,7 @@ async fn setup_presets(
                 };
 
                 // ew?
+                loading.set(Loading::Loading(Some("Updating Presets...")));
                 presets.update(|list| {
                     list.iter_mut().for_each(|p| {
                         p.items.iter_mut().for_each(|i| {
@@ -295,6 +298,7 @@ async fn setup_presets(
                         });
                     });
                 });
+                loading.set(Loading::Ready);
             }
             _ => tracing::error!("Unknown preset event: {}", event),
         },
