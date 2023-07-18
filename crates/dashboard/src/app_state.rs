@@ -343,7 +343,9 @@ async fn setup_presets(
                     return;
                 };
 
-                tracing::info!("Preset deleted");
+                presets.update(|list| {
+                    list.retain(|p| p.id != id);
+                });
             }
             _ => tracing::error!("Unknown preset event: {}", event),
         },
