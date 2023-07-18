@@ -246,6 +246,7 @@ async fn setup_presets(
             "update".to_string(),
             "blacklist".to_string(),
             "unblacklist".to_string(),
+            "delete".to_string(),
         ],
         move |event, data: PresetUpdate| match event.as_str() {
             "create" => {
@@ -303,7 +304,6 @@ async fn setup_presets(
                 loading.set(Loading::Ready);
             }
             "blacklist" => {
-                tracing::info!("Blacklisting...");
                 let PresetUpdate::Blacklisted(published_file_id) = data else {
                     tracing::error!("Incompatible data for event: {}", event);
                     return;
@@ -321,7 +321,6 @@ async fn setup_presets(
                 });
             }
             "unblacklist" => {
-                tracing::info!("UnBlacklisting...");
                 let PresetUpdate::Unblacklisted(published_file_id) = data else {
                     tracing::error!("Incompatible data for event: {}", event);
                     return;
@@ -337,6 +336,14 @@ async fn setup_presets(
                         });
                     });
                 });
+            }
+            "delete" => {
+                let PresetUpdate::Delete(id) = data else {
+                    tracing::error!("Incompatible data for event: {}", event);
+                    return;
+                };
+
+                tracing::info!("Preset deleted");
             }
             _ => tracing::error!("Unknown preset event: {}", event),
         },
