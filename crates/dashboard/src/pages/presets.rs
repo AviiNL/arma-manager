@@ -18,6 +18,28 @@ pub fn Presets(cx: Scope) -> impl IntoView {
     let status = app_state.status.clone();
 
     let selected_preset = create_rw_signal(cx, None::<Preset>);
+    let search = create_rw_signal(cx, String::default());
+
+    let filtered_preset = Signal::derive(cx, move || {
+        let search = search.get();
+        let Some(preset) = selected_preset.get() else {
+            return None;
+        };
+
+        if search.is_empty() {
+            return Some(preset);
+        }
+
+        let mut preset = preset.clone();
+
+        preset.items = preset
+            .items
+            .into_iter()
+            .filter(|item| item.name.to_lowercase().contains(&search.to_lowercase()))
+            .collect();
+
+        Some(preset)
+    });
 
     create_effect(cx, move |_| {
         let presets = presets.get();
@@ -26,7 +48,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
         if let Some(preset) = presets.iter().find(|preset| preset.selected) {
             let mut preset = preset.clone();
             preset.items.sort_by(|a, b| a.position.cmp(&b.position));
-            selected_preset.set(Some(preset));
+            selected_preset.set(Some(preset.clone()));
         };
 
         loading.set(Loading::Ready);
@@ -35,11 +57,12 @@ pub fn Presets(cx: Scope) -> impl IntoView {
     let select_preset = create_action(cx, move |id: &i64| {
         let id = id.clone();
         async move {
-            if let Some(preset) = selected_preset.get_untracked() {
+            if let Some(preset) = filtered_preset.get_untracked() {
                 if preset.id == id {
                     return;
                 }
             }
+            search.set(String::default());
             loading.set(Loading::Loading(None));
 
             let api = app_state.api.get_untracked().expect("there to be an Api");
@@ -73,7 +96,10 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                     </ul>
                 </div>
 
-                <div class="order-last">
+                <div class="order-last flex flex-none gap-2">
+                    <div class="form-control">
+                        <input type="text" placeholder="Search…" class="input input-bordered" prop:value={move || search.get()} on:input=move |ev| search.set(event_target_value(&ev)) />
+                    </div>
 
                     <div class="dropdown dropdown-end">
                         <div class="btn-group">
@@ -108,8 +134,8 @@ pub fn Presets(cx: Scope) -> impl IntoView {
             <div class="max-w-full h-full overflow-y-auto">
                 <table class="table table-fixed table-zebra w-full">
                     <tbody>
-                        {move || if let Some(selected_preset) = selected_preset.get() {
-                            view! { cx, <For each={move || selected_preset.items.clone()} key={|item| item.id} view={move |cx, item| view! { cx, <PresetItem item=item.clone() /> }.into_view(cx)} /> }.into_view(cx)
+                        {move || if let Some(filtered_preset) = filtered_preset.get() {
+                            view! { cx, <For each={move || filtered_preset.items.clone()} key={|item| item.id} view={move |cx, item| view! { cx, <PresetItem item=item.clone() /> }.into_view(cx)} /> }.into_view(cx)
                         } else {
                             view! { cx,
                                 <tr>
