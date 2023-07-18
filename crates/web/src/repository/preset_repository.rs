@@ -223,6 +223,14 @@ impl PresetRepository {
 
         Ok(preset_item)
     }
+
+    pub async fn delete_preset(&self, id: i64) -> RepositoryResult<()> {
+        sqlx::query!("DELETE FROM presets WHERE id = ?", id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
 }
 
 impl PresetRepository {

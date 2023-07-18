@@ -83,4 +83,15 @@ impl PresetService {
 
         Ok(())
     }
+
+    // delete preset
+    pub async fn delete_preset(&self, schema: DeletePresetSchema) -> Result<(), Box<dyn std::error::Error>> {
+        self.repository.delete_preset(schema.id).await?;
+
+        let _ = self.tx.send(Ok(Event::default()
+            .event("delete")
+            .data(serde_json::to_string(&PresetUpdate::Delete(schema.id))?)));
+
+        Ok(())
+    }
 }

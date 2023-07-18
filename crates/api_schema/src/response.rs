@@ -85,4 +85,5 @@ pub enum PresetUpdate {
     Selected(i64),
     Blacklisted(i64),
     Unblacklisted(i64),
+    Delete(i64),
 }

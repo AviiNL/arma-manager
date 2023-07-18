@@ -88,6 +88,20 @@ pub async fn unblacklist_item(
     }))
 }
 
+pub async fn delete_preset(
+    Extension(preset_service): Extension<Arc<PresetService>>,
+    Json(input): Json<DeletePresetSchema>,
+) -> ApiResult<impl IntoResponse> {
+    preset_service
+        .delete_preset(input)
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    Ok(ApiResponse::new(SimpleResponse {
+        response: "OK".to_string(),
+    }))
+}
+
 pub async fn sse_preset_handler(
     Extension(presets): Extension<Arc<PresetService>>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {

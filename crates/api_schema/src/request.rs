@@ -43,3 +43,8 @@ pub struct PresetItemSchema {
 pub struct BlacklistItemSchema {
     pub published_file_id: i64,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DeletePresetSchema {
+    pub id: i64,
+}
