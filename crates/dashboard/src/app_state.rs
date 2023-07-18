@@ -217,10 +217,6 @@ async fn setup_presets(
     let aapi = api.clone();
     let status = status.clone();
 
-    if let Ok(presets) = api.get_presets().await {
-        preset_signal.set(presets);
-    }
-
     let presets = preset_signal.clone();
     create_resource(
         cx,

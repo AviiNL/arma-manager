@@ -70,14 +70,23 @@ impl PresetRepository {
         }
     }
 
+    /*
+    SELECT id, name, published_file_id, position, enabled
+    FROM preset_items
+    FULL OUTER JOIN blacklist ON blacklist.blacklisted = preset_items.published_file_id
+    WHERE preset_id = ?
+    ORDER BY position ASC
+        */
+
     async fn get_items(&self, preset_id: i64) -> RepositoryResult<Vec<PresetItem>> {
         let mut items: Vec<PresetItem> = sqlx::query_as(
             r#"
-            SELECT id, name, published_file_id, position, enabled
-            FROM preset_items
-            INNER JOIN (SELECT published_file_id AS "blacklisted.published_file_id" FROM blacklist WHERE blacklisted.published_file_id = published_file_id) AS "blacklisted"
-            WHERE preset_id = ?
-            ORDER BY position ASC
+            SELECT i.id, i.name, i.published_file_id, i.position, i.enabled,
+                CASE WHEN b.published_file_id IS NULL THEN 0 ELSE 1 END AS blacklisted
+            FROM preset_items i
+            LEFT JOIN blacklist b ON i.published_file_id = b.published_file_id
+            WHERE i.preset_id = ?
+            ORDER BY i.position ASC
             "#,
         )
         .bind(preset_id)
@@ -125,7 +134,9 @@ impl PresetRepository {
                 r#"
                 INSERT INTO preset_items (preset_id, name, published_file_id, position, enabled)
                 VALUES (?, ?, ?, ?, ?)
-                RETURNING id, name, published_file_id, position, enabled
+                RETURNING id, name, published_file_id, position, enabled,
+                    (SELECT EXISTS(SELECT 1 FROM blacklist b
+                    WHERE b.published_file_id = preset_items.published_file_id)) AS blacklisted
                 "#,
             )
             .bind(preset.id)
@@ -184,7 +195,11 @@ impl PresetRepository {
     }
 
     pub async fn update_item(&self, schema: UpdatePresetItemSchema) -> RepositoryResult<PresetItem> {
-        let mut query = QueryBuilder::new("UPDATE preset_items SET ");
+        let mut query = QueryBuilder::new(
+            r#"
+            UPDATE preset_items
+            SET "#,
+        );
 
         if let Some(enabled) = schema.enabled {
             query.push(" enabled = ").push_bind(enabled);
@@ -197,10 +212,16 @@ impl PresetRepository {
         query.push(" WHERE id = ").push_bind(schema.id);
 
         // returning
-        query.push(" RETURNING id, name, published_file_id, position, enabled");
+        query.push(
+            "RETURNING id, name, published_file_id, position, enabled,
+            (SELECT EXISTS(SELECT 1 FROM blacklist b
+             WHERE b.published_file_id = preset_items.published_file_id)) AS blacklisted",
+        );
 
         let mut preset_item = query.build_query_as::<PresetItem>().fetch_one(&self.pool).await?;
         preset_item.exists = arma::mod_exists(preset_item.published_file_id);
+
+        dbg!(&preset_item);
 
         Ok(preset_item)
     }

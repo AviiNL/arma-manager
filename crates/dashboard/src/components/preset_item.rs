@@ -40,6 +40,11 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
             } else {
                 view! { cx, <s>{item.name}</s> }.into_view(cx)
             }}
+            {if item.blacklisted {
+                view! { cx, <span class="badge badge-error badge-xs ml-2">Blacklisted</span> }.into_view(cx)
+            }else {
+                view! { cx, <></> }.into_view(cx)
+            }}
             </td>
         </tr>
     }
