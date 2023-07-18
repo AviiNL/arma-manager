@@ -75,6 +75,7 @@ impl PresetRepository {
             r#"
             SELECT id, name, published_file_id, position, enabled
             FROM preset_items
+            INNER JOIN (SELECT published_file_id AS "blacklisted.published_file_id" FROM blacklist WHERE blacklisted.published_file_id = published_file_id) AS "blacklisted"
             WHERE preset_id = ?
             ORDER BY position ASC
             "#,
