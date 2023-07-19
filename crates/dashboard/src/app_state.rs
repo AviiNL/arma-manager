@@ -35,6 +35,7 @@ pub struct AppState {
     pub status: RwSignal<Option<Status>>,
     pub log: RwSignal<LogData>,
     pub presets: RwSignal<PresetList>,
+    pub config: RwSignal<ArmaConfig>,
 }
 
 impl AppState {
@@ -47,6 +48,7 @@ impl AppState {
             status: create_rw_signal(cx, None),
             log: create_rw_signal(cx, Default::default()),
             presets: create_rw_signal(cx, Default::default()),
+            config: create_rw_signal(cx, Default::default()),
         }
     }
 
@@ -73,6 +75,7 @@ impl AppState {
         let status_signal = self.status.clone();
         let log_signal = self.log.clone();
         let preset_signal = self.presets.clone();
+        let config_signal = self.config.clone();
 
         create_effect(cx, move |_| {
             if let Some(api) = api_signal.get() {
@@ -99,6 +102,7 @@ impl AppState {
                     set_status(cx, &api, &status_signal).await;
                     setup_logs(cx, &api, &log_signal).await;
                     setup_presets(cx, &api, &preset_signal, &status_signal, &loading_signal).await;
+                    setup_config(cx, &api, &config_signal).await;
 
                     // only do this if we are on Login page
                     if route.path() == crate::pages::Page::Login.path().trim_start_matches("/") {
@@ -348,5 +352,27 @@ async fn setup_presets(
             _ => tracing::error!("Unknown preset event: {}", event),
         },
     );
+    api.add_abort_signal(abort_signal);
+}
+
+async fn setup_config(cx: Scope, api: &AuthorizedApi, config_signal: &RwSignal<ArmaConfig>) {
+    let api = api.clone();
+    let config_signal = config_signal.clone();
+
+    if let Ok(config) = api.get_config().await {
+        config_signal.set(config);
+    }
+
+    let abort_signal = create_sse(
+        cx,
+        "arma/config",
+        vec!["server.cfg".to_string()],
+        move |event_type, data: ArmaConfig| {
+            if event_type == "server.cfg" {
+                config_signal.update(|c| c.config = data.config);
+            }
+        },
+    );
+
     api.add_abort_signal(abort_signal);
 }

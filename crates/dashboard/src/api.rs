@@ -217,6 +217,14 @@ impl AuthorizedApi {
         self.send(Request::delete(&url).json(preset)?).await
     }
 
+    pub async fn get_config(&self) -> Result<ArmaConfig> {
+        self.loading.set(Loading::Loading(Some("Loading config...")));
+        let url = format!("{}/arma/config", self.url);
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
+    }
+
     pub fn token(&self) -> &ApiToken {
         &self.token
     }

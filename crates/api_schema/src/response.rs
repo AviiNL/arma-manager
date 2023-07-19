@@ -87,3 +87,9 @@ pub enum PresetUpdate {
     Unblacklisted(i64),
     Delete(i64),
 }
+
+#[derive(Default, Clone, Debug, Serialize, Deserialize)]
+pub struct ArmaConfig {
+    pub config: String,
+    // pub profile: String, // for difficulty settings etc
+}

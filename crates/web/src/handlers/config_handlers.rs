@@ -1,4 +1,4 @@
-use api_schema::{request::UpdateConfigSchema, response::SimpleResponse};
+use api_schema::{request::*, response::*};
 use axum::{
     response::{
         sse::{Event, KeepAlive},
@@ -23,7 +23,7 @@ pub async fn get_config() -> ApiResult<impl IntoResponse> {
         .await
         .map_err(|e| ErrorResponse::new(format!("{}", e)))?;
 
-    Ok(ApiResponse::new(config))
+    Ok(ApiResponse::new(ArmaConfig { config }))
 }
 
 pub async fn post_config(
