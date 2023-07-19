@@ -126,7 +126,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                     <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-fit">
                         <For
                             each={move || presets.get()}
-                            key={|item| item.id}
+                             key={|item| item.id}
                             view={move |cx, item| view! { cx,
                                 <li>
                                     <div class="flex whitespace-nowrap items-stretch">
