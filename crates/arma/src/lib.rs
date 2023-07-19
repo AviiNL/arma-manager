@@ -43,3 +43,17 @@ pub fn get_mod_str(preset: Preset) -> Result<String, Box<dyn std::error::Error>>
 
     Ok(format!(r#""-mods={}""#, items.join(";")))
 }
+
+pub fn get_default_parameters() -> Vec<String> {
+    let mut params = Vec::new();
+
+    params.push("-noSplash".to_string());
+    params.push("-world=empty".to_string());
+    params.push("-noFilePatching".to_string());
+    params.push("-noPause".to_string());
+    params.push("-skipIntro".to_string());
+    params.push("-enableHT".to_string());
+    params.push("-hugePages".to_string());
+
+    params
+}
