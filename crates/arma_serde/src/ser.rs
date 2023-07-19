@@ -80,7 +80,10 @@ where
     type SerializeStructVariant = Impossible<Self::Ok, Self::Error>;
 
     fn serialize_bool(self, v: bool) -> Result<()> {
-        todo!()
+        let s = if v { b"1" as &[u8] } else { b"0" as &[u8] };
+        self.writer.write_all(s).map_err(Error::io)?;
+
+        Ok(())
     }
 
     fn serialize_i8(self, v: i8) -> Result<()> {
