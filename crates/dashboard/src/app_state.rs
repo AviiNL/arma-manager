@@ -313,7 +313,6 @@ async fn setup_presets(
                     list.iter_mut().for_each(|p| {
                         p.items.iter_mut().for_each(|i| {
                             if i.published_file_id == published_file_id {
-                                tracing::info!("Blacklisting {}", i.name);
                                 i.blacklisted = true;
                             }
                         });
@@ -330,7 +329,6 @@ async fn setup_presets(
                     list.iter_mut().for_each(|p| {
                         p.items.iter_mut().for_each(|i| {
                             if i.published_file_id == published_file_id {
-                                tracing::info!("UnBlacklisting {}", i.name);
                                 i.blacklisted = false;
                             }
                         });

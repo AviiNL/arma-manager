@@ -22,6 +22,16 @@ pub fn get_steam_path() -> PathBuf {
     path
 }
 
+pub fn get_arma_path() -> Option<PathBuf> {
+    let path = get_steam_path().join("steamapps").join("common").join("Arma 3 Server");
+
+    if !path.exists() {
+        return None;
+    }
+
+    Some(path)
+}
+
 pub fn get_log_path() -> PathBuf {
     let path = get_base_path().join("logs");
 

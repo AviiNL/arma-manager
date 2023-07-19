@@ -1,23 +1,10 @@
 use std::{convert::Infallible, sync::Arc};
 
 use axum::response::sse::Event;
-use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 
-#[derive(Copy, Debug, Default, Clone, Serialize, Deserialize, PartialEq)]
-pub enum State {
-    Starting,
-    Running,
-    Stopping,
-    #[default]
-    Stopped,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Status {
-    pub steamcmd: State,
-    pub arma: State,
-}
+pub use api_schema::response::State;
+pub use api_schema::response::Status;
 
 pub struct StatusService {
     tx: tokio::sync::watch::Sender<Result<Event, Infallible>>,

@@ -145,6 +145,8 @@ impl Process {
 
         let cwd = std::env::current_dir().unwrap();
 
+        tracing::info!("Starting process: {} {}", program.display(), arguments);
+
         pty.spawn(program.into(), Some(arguments.into()), Some(cwd.into()), None)?;
 
         self.truncate_log();
