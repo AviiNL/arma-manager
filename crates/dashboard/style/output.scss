@@ -105,7 +105,7 @@
   font-size: 1.125rem;
   line-height: 1.75rem;
   --tw-text-opacity: 1;
-  color: hsl(var(--pc) / var(--tw-text-opacity));
+  color: hsl(var(--bc) / var(--tw-text-opacity));
   transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-property: transform, opacity, visibility;
@@ -3254,10 +3254,6 @@ html {
   flex-direction: column;
 }
 
-.content-stretch {
-  align-content: stretch;
-}
-
 .items-center {
   align-items: center;
 }
@@ -3395,10 +3391,6 @@ html {
 
 .text-right {
   text-align: right;
-}
-
-.align-middle {
-  vertical-align: middle;
 }
 
 .text-2xl {

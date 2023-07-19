@@ -29,7 +29,7 @@ pub fn Loading(cx: Scope) -> impl IntoView {
         <div class="loading-cover">
             <p class="loading loading-bars text-primary loading-lg"></p>
             { move || if text().is_some() {
-                view! { cx, <p class="text-primary-content">{text().unwrap()}</p> }.into_view(cx)
+                view! { cx, <p class="text-base-content">{text().unwrap()}</p> }.into_view(cx)
             } else {
                 view! { cx, <p></p> }.into_view(cx)
             }}
