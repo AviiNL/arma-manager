@@ -3254,8 +3254,16 @@ html {
   flex-direction: column;
 }
 
+.content-stretch {
+  align-content: stretch;
+}
+
 .items-center {
   align-items: center;
+}
+
+.items-stretch {
+  align-items: stretch;
 }
 
 .justify-center {
@@ -3387,6 +3395,10 @@ html {
 
 .text-right {
   text-align: right;
+}
+
+.align-middle {
+  vertical-align: middle;
 }
 
 .text-2xl {
@@ -3640,6 +3652,11 @@ textarea.log {
 .hover\:bg-warning:hover {
   --tw-bg-opacity: 1;
   background-color: hsl(var(--wa) / var(--tw-bg-opacity));
+}
+
+.hover\:text-error-content:hover {
+  --tw-text-opacity: 1;
+  color: hsl(var(--erc, var(--nc)) / var(--tw-text-opacity));
 }
 
 .hover\:underline:hover {

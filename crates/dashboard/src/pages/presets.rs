@@ -1,7 +1,4 @@
-use api_schema::{
-    request::SelectPresetSchema,
-    response::{Preset, State},
-};
+use api_schema::{request::*, response::*};
 use gloo_storage::{LocalStorage, Storage};
 use leptos::*;
 
@@ -100,10 +97,19 @@ pub fn Presets(cx: Scope) -> impl IntoView {
         api.force_check().await.unwrap();
     });
 
+    let delete_preset = create_action(cx, move |id: &i64| {
+        let id = id.clone();
+        async move {
+            let api = app_state.api.get_untracked().expect("there to be an Api");
+            let schema = DeletePresetSchema { id };
+            api.delete_preset(&schema).await.unwrap();
+        }
+    });
+
     view! { cx,
         <div class="card w-full p-6 bg-base-100 shadow-xl mt-2 mb-4">
             <div class="flex justify-between text-sm font-semibold">
-                <div class="dropdown" title="Change Preset">
+                <div class="dropdown">
                     <label class="btn gap-1 normal-case btn-ghost" tabindex="0">
                         <span class="truncate">
                         {move || {
@@ -122,9 +128,34 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                             each={move || presets.get()}
                             key={|item| item.id}
                             view={move |cx, item| view! { cx,
-                                <li class="whitespace-nowrap">
-                                    <a onClick="document.activeElement.blur();" on:click=move |_| select_preset.dispatch(item.id)>{item.name}</a>
-                                    //  TODO: Wrap in flex and add delete button, preferably with some confirmation
+                                <li>
+                                    <div class="flex whitespace-nowrap items-stretch" onClick="document.activeElement.blur();" on:click=move |_| select_preset.dispatch(item.id)>
+                                        <div class="flex flex-1 grow items-center">
+                                            <a href="#">{item.name}</a>
+                                        </div>
+                                        <div class="flex-0">
+                                            {move || {
+                                                let mut disabled = false;
+                                                if let Some(active_preset) = selected_preset.get() {
+                                                    if active_preset.id == item.id {
+                                                        disabled = true;
+                                                    }
+                                                }
+
+                                                view!(cx,
+                                                    <button
+                                                        class="btn btn-ghost btn-sm hover:bg-error hover:text-error-content"
+                                                        onClick="document.activeElement.blur();"
+                                                        disabled=disabled
+                                                        on:click=move |_| delete_preset.dispatch(item.id)
+                                                        title="Delete Preset">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                )
+                                            }}
+
+                                        </div>
+                                    </div>
                                 </li>
                             }.into_view(cx)} />
                     </ul>

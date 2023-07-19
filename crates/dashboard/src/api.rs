@@ -166,6 +166,11 @@ impl AuthorizedApi {
         self.send(Request::delete(&url).json(item)?).await
     }
 
+    pub async fn delete_preset(&self, preset: &DeletePresetSchema) -> Result<SimpleResponse> {
+        let url = format!("{}/presets", self.url);
+        self.send(Request::delete(&url).json(preset)?).await
+    }
+
     pub fn token(&self) -> &ApiToken {
         &self.token
     }

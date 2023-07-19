@@ -225,7 +225,27 @@ impl PresetRepository {
     }
 
     pub async fn delete_preset(&self, id: i64) -> RepositoryResult<()> {
-        sqlx::query!("DELETE FROM presets WHERE id = ? AND selected = NULL", id)
+        // abort if the preset is the currently selected one
+        let selected = sqlx::query!(
+            r#"
+            SELECT selected FROM presets WHERE id = ?
+            "#,
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        if selected.selected.is_some() {
+            return Err(anyhow::anyhow!("Cannot delete the currently selected preset").into());
+        }
+
+        sqlx::query("DELETE FROM preset_items WHERE preset_id = ?")
+            .bind(id)
+            .execute(&self.pool)
+            .await?;
+
+        sqlx::query("DELETE FROM presets WHERE id = ?")
+            .bind(id)
             .execute(&self.pool)
             .await?;
 
