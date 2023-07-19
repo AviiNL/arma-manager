@@ -5,7 +5,7 @@ use leptos::*;
 #[component]
 pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("there to be an AppState");
-    let enabled = create_rw_signal(cx, !item.blacklisted && item.enabled);
+    let enabled = create_rw_signal(cx, item.enabled);
 
     let name = item.name.clone();
     let toggle = create_action(cx, move |value: &bool| {

@@ -48,3 +48,8 @@ pub struct BlacklistItemSchema {
 pub struct DeletePresetSchema {
     pub id: i64,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct UpdateConfigSchema {
+    pub config: String,
+}

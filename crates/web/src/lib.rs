@@ -24,6 +24,7 @@ pub async fn start() {
     let user_token_repository = UserTokenRepository::new(pool.clone());
     let preset_repository = PresetRepository::new(pool.clone());
 
+    let config_service = ConfigService::new();
     let status = StatusService::new();
     let preset = PresetService::new(preset_repository.clone());
     let log = LogService::new();
@@ -46,6 +47,7 @@ pub async fn start() {
         .layer(Extension(user_repository))
         .layer(Extension(user_token_repository))
         .layer(Extension(preset_repository))
+        .layer(Extension(config_service))
         .layer(Extension(status))
         .layer(Extension(preset))
         .layer(Extension(log))

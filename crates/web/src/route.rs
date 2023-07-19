@@ -18,6 +18,8 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/api/v1/arma/restart", get(restart_arma))
         .route("/api/v1/arma/mods/download", get(download_missing_mods))
         .route("/api/v1/arma/mods/check", get(force_check))
+        .route("/api/v1/arma/config", get(get_config))
+        .route("/api/v1/arma/config", post(post_config))
         .route("/api/v1/logs/:channel", get(api_logs))
         .route("/api/v1/presets", get(get_presets))
         .route("/api/v1/presets", post(create_preset))
@@ -30,6 +32,7 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/sse/v1/status", get(sse_status_handler))
         .route("/sse/v1/logs", get(sse_logs))
         .route("/sse/v1/presets", get(sse_preset_handler))
+        .route("/sse/v1/arma/config", get(sse_config))
         .layer(auth_layer)
         // Public routes
         .route("/api/v1/auth/register", post(register_user_handler))

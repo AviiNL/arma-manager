@@ -9,7 +9,6 @@ use crate::{
     service::{State, StatusService},
 };
 
-#[axum::debug_handler]
 pub async fn start_arma(
     Extension(status): Extension<Arc<StatusService>>,
     Extension(preset_repository): Extension<PresetRepository>,
@@ -25,7 +24,7 @@ pub async fn start_arma(
         return Err(ErrorResponse::new("No preset selected").into());
     };
 
-    let mod_str = match arma::get_mod_str(preset).map_err(|e| ErrorResponse::new(format!("{}", e))) {
+    let mod_str = match arma::get_mod_str(&preset).map_err(|e| ErrorResponse::new(format!("{}", e))) {
         Ok(mod_str) => mod_str,
         Err(e) => {
             tokio::spawn(async move {
@@ -35,6 +34,8 @@ pub async fn start_arma(
         }
     };
     let params = arma::get_default_parameters();
+
+    arma::install_keys(&preset).map_err(|e| ErrorResponse::new(format!("{}", e)))?;
 
     let c = match arma::Arma3::new()
         .mods(mod_str)

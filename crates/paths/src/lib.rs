@@ -22,6 +22,16 @@ pub fn get_steam_path() -> PathBuf {
     path
 }
 
+pub fn get_config_path() -> PathBuf {
+    let path = get_base_path().join("config");
+
+    if !path.exists() {
+        std::fs::create_dir_all(&path).unwrap();
+    }
+
+    path
+}
+
 pub fn get_arma_path() -> Option<PathBuf> {
     let path = get_steam_path().join("steamapps").join("common").join("Arma 3 Server");
 
