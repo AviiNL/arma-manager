@@ -129,8 +129,8 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                             key={|item| item.id}
                             view={move |cx, item| view! { cx,
                                 <li>
-                                    <div class="flex whitespace-nowrap items-stretch" onClick="document.activeElement.blur();" on:click=move |_| select_preset.dispatch(item.id)>
-                                        <div class="flex flex-1 grow items-center">
+                                    <div class="flex whitespace-nowrap items-stretch">
+                                        <div class="flex flex-1 grow items-center" onClick="document.activeElement.blur();" on:click=move |_| select_preset.dispatch(item.id)>
                                             <a href="#">{item.name}</a>
                                         </div>
                                         <div class="flex-0">

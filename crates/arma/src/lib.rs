@@ -18,10 +18,22 @@ pub fn get_mod_path(published_file_id: i64) -> PathBuf {
         .join(published_file_id.to_string())
 }
 
-pub fn get_mod_str(preset: Preset) -> String {
+pub fn get_mod_str(preset: Preset) -> Result<String, Box<dyn std::error::Error>> {
     let mut items = preset.items;
 
     items.sort_by(|a, b| a.position.cmp(&b.position));
+
+    let mut missing = Vec::new();
+
+    for item in &items {
+        if !mod_exists(item.published_file_id) {
+            missing.push(item.name.clone());
+        }
+    }
+
+    if !missing.is_empty() {
+        return Err(format!("Missing mods: {}", missing.join(", ")).into());
+    }
 
     let items = items
         .iter()
@@ -29,5 +41,5 @@ pub fn get_mod_str(preset: Preset) -> String {
         .map(|item| get_mod_path(item.published_file_id).to_string_lossy().to_string())
         .collect::<Vec<_>>();
 
-    format!(r#""-mods={}""#, items.join(";"))
+    Ok(format!(r#""-mods={}""#, items.join(";")))
 }
