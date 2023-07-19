@@ -3,15 +3,17 @@ use std::{rc::Rc, sync::Mutex};
 use api_schema::{request::*, response::*, *};
 use futures::channel::oneshot;
 use gloo_net::http::{Request, Response};
+use leptos::{RwSignal, SignalSet};
 use serde::{de::DeserializeOwned, Deserializer};
 use serde_json::Value;
 use thiserror::Error;
 
-use crate::app::DEFAULT_API_URL;
+use crate::{app::DEFAULT_API_URL, app_state::Loading};
 
 #[derive(Clone, Copy)]
 pub struct UnauthorizedApi {
     url: &'static str,
+    loading: RwSignal<Loading>,
 }
 
 #[derive(Debug, Clone)]
@@ -19,11 +21,15 @@ pub struct AuthorizedApi {
     url: &'static str,
     token: ApiToken,
     sse_abort_signals: Rc<Mutex<Vec<oneshot::Sender<()>>>>,
+    loading: RwSignal<Loading>,
 }
 
 impl UnauthorizedApi {
-    pub const fn new() -> Self {
-        Self { url: DEFAULT_API_URL }
+    pub const fn new(loading: RwSignal<Loading>) -> Self {
+        Self {
+            url: DEFAULT_API_URL,
+            loading,
+        }
     }
     pub async fn register(&self, credentials: &RegisterUserSchema) -> Result<FilteredUser> {
         let url = format!("{}/auth/register", self.url);
@@ -34,16 +40,17 @@ impl UnauthorizedApi {
         let url = format!("{}/auth/login", self.url);
         let response = Request::post(&url).json(credentials)?.send().await?;
         let token = into_json(response).await?;
-        Ok(AuthorizedApi::new(self.url, token))
+        Ok(AuthorizedApi::new(self.url, token, self.loading.clone()))
     }
 }
 
 impl AuthorizedApi {
-    pub fn new(url: &'static str, token: ApiToken) -> Self {
+    pub fn new(url: &'static str, token: ApiToken, loading: RwSignal<Loading>) -> Self {
         Self {
             url,
             token,
             sse_abort_signals: Rc::new(Mutex::new(vec![])),
+            loading,
         }
     }
 
@@ -77,68 +84,107 @@ impl AuthorizedApi {
     }
 
     pub async fn logout(&self) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Logging out...")));
         let url = format!("{}/auth/logout", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn user_info(&self) -> Result<FilteredUser> {
+        self.loading.set(Loading::Loading(Some("Loading user info...")));
         let url = format!("{}/users/me", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn health_check(&self) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Checking health...")));
         let url = format!("{}/auth/health_check", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn last_status(&self) -> Result<Status> {
+        self.loading.set(Loading::Loading(Some("Loading status...")));
         let url = format!("{}/status", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn update_arma(&self) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Updating Arma...")));
         let url = format!("{}/arma/update", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn download_missing_mods(&self) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Downloading missing mods...")));
         let url = format!("{}/arma/mods/download", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn force_check(&self) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Forcing check...")));
         let url = format!("{}/arma/mods/check", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn cancel_update_arma(&self) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Cancelling update...")));
         let url = format!("{}/arma/cancel_update", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn start_arma(&self) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Starting Arma...")));
         let url = format!("{}/arma/start", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn stop_arma(&self) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Stopping Arma...")));
         let url = format!("{}/arma/stop", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn restart_arma(&self) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Restarting Arma...")));
         let url = format!("{}/arma/restart", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn get_log(&self, channel: impl Into<String>) -> Result<LogResponse> {
+        self.loading.set(Loading::Loading(Some("Loading log...")));
         let url = format!("{}/logs/{}", self.url, channel.into());
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn get_presets(&self) -> Result<Vec<Preset>> {
+        self.loading.set(Loading::Loading(Some("Loading presets...")));
         let url = format!("{}/presets", self.url);
-        self.send(Request::get(&url)).await
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub async fn post_preset(&self, preset: &CreatePresetSchema) -> Result<Preset> {

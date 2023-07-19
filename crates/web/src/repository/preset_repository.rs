@@ -78,7 +78,7 @@ impl PresetRepository {
     ORDER BY position ASC
         */
 
-    async fn get_items(&self, preset_id: i64) -> RepositoryResult<Vec<PresetItem>> {
+    pub async fn get_items(&self, preset_id: i64) -> RepositoryResult<Vec<PresetItem>> {
         let mut items: Vec<PresetItem> = sqlx::query_as(
             r#"
             SELECT i.id, i.name, i.published_file_id, i.position, i.enabled,
@@ -250,6 +250,21 @@ impl PresetRepository {
             .await?;
 
         Ok(())
+    }
+}
+
+impl PresetRepository {
+    pub async fn is_item_used(&self, published_file_id: i64) -> RepositoryResult<bool> {
+        let result = sqlx::query!(
+            r#"
+            SELECT EXISTS(SELECT 1 FROM preset_items WHERE published_file_id = ?) AS "exists!: bool"
+            "#,
+            published_file_id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(result.exists)
     }
 }
 

@@ -111,7 +111,7 @@ impl AppState {
 
         create_effect(cx, move |_| {
             if let Ok(token) = LocalStorage::get(API_TOKEN_STORAGE_KEY) {
-                let api = AuthorizedApi::new(DEFAULT_API_URL, token);
+                let api = AuthorizedApi::new(DEFAULT_API_URL, token, loading_signal.clone());
                 api_signal.set(Some(api));
             } else {
                 // not logged in, stop loading

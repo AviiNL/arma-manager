@@ -18,7 +18,7 @@ pub fn Login(cx: Scope) -> impl IntoView {
 
     app_state.check_auth(cx);
 
-    let api = UnauthorizedApi::new();
+    let api = UnauthorizedApi::new(loading);
 
     let (login_error, set_login_error) = create_signal(cx, None::<String>);
     let (wait_for_response, set_wait_for_response) = create_signal(cx, false);

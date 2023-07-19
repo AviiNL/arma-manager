@@ -12,7 +12,7 @@ pub fn Register(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
     let loading = app_state.loading.clone();
 
-    let api = UnauthorizedApi::new();
+    let api = UnauthorizedApi::new(loading);
     let (register_response, set_register_response) = create_signal(cx, None::<FilteredUser>);
     let (register_error, set_register_error) = create_signal(cx, None::<String>);
     let (wait_for_response, set_wait_for_response) = create_signal(cx, false);

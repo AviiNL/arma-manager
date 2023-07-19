@@ -86,12 +86,40 @@ impl PresetService {
 
     // delete preset
     pub async fn delete_preset(&self, schema: DeletePresetSchema) -> Result<(), Box<dyn std::error::Error>> {
+        // we need a temporary list of all the items inside the preset so we can check if they're still used after deletion
+        // if they arent used at all anymore, we can clean up the files on disk
+        let items = self
+            .repository
+            .get_items(schema.id)
+            .await?
+            .iter()
+            .map(|item| item.published_file_id)
+            .collect::<Vec<_>>();
+
         self.repository.delete_preset(schema.id).await?;
+
+        for pid in items {
+            self.delete_item(pid).await?;
+        }
 
         let _ = self.tx.send(Ok(Event::default()
             .event("delete")
             .data(serde_json::to_string(&PresetUpdate::Delete(schema.id))?)));
 
         Ok(())
+    }
+
+    pub async fn delete_item(&self, published_file_id: i64) -> Result<(), Box<dyn std::error::Error>> {
+        if self.repository.is_item_used(published_file_id).await? {
+            return Ok(());
+        }
+
+        // delete from disk
+        let path = arma::get_mod_path(published_file_id);
+        if path.exists() {
+            tokio::fs::remove_dir_all(path).await?;
+        }
+
+        return Ok(());
     }
 }
