@@ -7,6 +7,7 @@ pub const ARMA_CLIENT_APP_ID: u64 = 107410;
 pub const ARMA_SERVER_APP_ID: u64 = 233780;
 
 const DEFAULT_CONFIG: &str = include_str!("../server.cfg");
+const DEFAULT_PROFILE: &str = include_str!("../profile.cfg");
 
 pub fn mod_exists(published_file_id: i64) -> bool {
     get_mod_path(published_file_id).exists()
@@ -134,6 +135,17 @@ pub fn prepare_config() -> Result<(), std::io::Error> {
     Ok(())
 }
 
+pub fn prepare_profile() -> Result<(), std::io::Error> {
+    let profile_path = paths::get_config_path();
+    let profile_file = profile_path.join("profile.cfg");
+
+    if !profile_file.exists() {
+        std::fs::write(profile_file, DEFAULT_PROFILE)?;
+    }
+
+    Ok(())
+}
+
 // we also still need something for key management
 // copying/moving/linking keys from mods to the arma keys folder
 // currently we're not verifying keys, so it's fine for now.
@@ -141,7 +153,7 @@ pub fn prepare_config() -> Result<(), std::io::Error> {
 pub struct Arma3 {
     mods: Option<String>,
     parameters: Option<Vec<String>>,
-    // config: Option<ArmaConfig>,
+    name: String,
 }
 
 impl Arma3 {
@@ -149,6 +161,7 @@ impl Arma3 {
         Self {
             mods: None,
             parameters: None,
+            name: "server".to_string(),
         }
     }
 
@@ -168,22 +181,37 @@ impl Arma3 {
         };
 
         let config_path = paths::get_config_path();
+
         let config_file = config_path.join("server.cfg");
         let config_lock = config_path.join("server.cfg.lock");
+
+        let profile_file = config_path.join("profile.cfg");
+        let Some(mut profile_lock) = paths::get_profile_path(&self.name) else {
+            unreachable!();
+        };
+        profile_lock = profile_lock.join(format!("{}.Arma3Profile", self.name)); // this is different
 
         if !config_file.exists() {
             std::fs::write(&config_file, DEFAULT_CONFIG)?;
         }
 
+        if !profile_file.exists() {
+            std::fs::write(&profile_file, DEFAULT_PROFILE)?;
+        }
+        // make a copy of the config file, overwrite if exists "server.cfg.lock"
+        // then pass the path to the config file as a parameter
+        std::fs::copy(&config_file, &config_lock)?;
+
+        // make a copy of the profile file, overwrite if exists "format!("{}.Arma3Profile", self.name)"
+        std::fs::copy(&profile_file, &profile_lock)?;
+
         let mut cmd = Process::new(arma_path.join("arma3server_x64.exe"));
+
+        cmd.arg(format!("-name={}", self.name));
 
         if let Some(mods) = self.mods {
             cmd.arg(mods);
         }
-
-        // make a copy of the config file, overwrite if exists "server.cfg.lock"
-        // then pass the path to the config file as a parameter
-        std::fs::copy(&config_file, &config_lock)?;
 
         cmd.arg(format!(r#""-config={}""#, config_lock.to_string_lossy()));
 

@@ -17,8 +17,16 @@ impl ConfigService {
         self.tx.subscribe()
     }
 
-    pub async fn update_config(&self, body: String) -> Result<(), std::io::Error> {
-        let config_file = paths::get_config_path().join("server.cfg");
+    pub async fn update_config(&self, channel: String, body: String) -> Result<(), std::io::Error> {
+        let config_file = paths::get_config_path().join(channel.clone());
+
+        if !config_file.exists() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                format!("Config file {} does not exist", config_file.display()),
+            ));
+        }
+
         tokio::fs::write(config_file, body.clone()).await?;
 
         let mut data = Vec::new();
@@ -28,7 +36,7 @@ impl ConfigService {
 
         let body = serde_json::to_string(&data)?;
 
-        let _ = self.tx.send(Event::default().event("server.cfg").data(body));
+        let _ = self.tx.send(Event::default().event(channel).data(body));
 
         Ok(())
     }

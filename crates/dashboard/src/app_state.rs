@@ -23,6 +23,7 @@ pub enum Loading {
 }
 
 pub type LogData = HashMap<String, Vec<String>>;
+pub type ConfigData = HashMap<String, Vec<String>>;
 
 pub type PresetList = Vec<Preset>;
 
@@ -35,7 +36,7 @@ pub struct AppState {
     pub status: RwSignal<Option<Status>>,
     pub log: RwSignal<LogData>,
     pub presets: RwSignal<PresetList>,
-    pub config: RwSignal<ArmaConfig>,
+    pub config: RwSignal<ConfigData>,
 }
 
 impl AppState {
@@ -355,22 +356,35 @@ async fn setup_presets(
     api.add_abort_signal(abort_signal);
 }
 
-async fn setup_config(cx: Scope, api: &AuthorizedApi, config_signal: &RwSignal<ArmaConfig>) {
+async fn setup_config(cx: Scope, api: &AuthorizedApi, config_signal: &RwSignal<ConfigData>) {
     let api = api.clone();
     let config_signal = config_signal.clone();
 
-    if let Ok(config) = api.get_config().await {
-        config_signal.set(config);
+    if let Ok(new_data) = api.get_config("server.cfg").await {
+        config_signal.update(|l| {
+            l.insert("server.cfg".into(), vec![]);
+            l.get_mut("server.cfg").unwrap().extend(new_data.config.clone())
+        });
+    }
+
+    if let Ok(new_data) = api.get_config("profile.cfg").await {
+        config_signal.update(|l| {
+            l.insert("profile.cfg".into(), vec![]);
+            l.get_mut("profile.cfg").unwrap().extend(new_data.config.clone())
+        });
     }
 
     let abort_signal = create_sse(
         cx,
         "arma/config",
-        vec!["server.cfg".to_string()],
-        move |event_type, data: ArmaConfig| {
-            if event_type == "server.cfg" {
-                config_signal.update(|c| c.config = data.config);
-            }
+        vec!["server.cfg".to_string(), "profile.cfg".to_string()],
+        move |channel, data: Vec<String>| {
+            config_signal.update(|l| {
+                l.insert(channel.clone(), vec![]); // clear it first
+                for line in data.iter() {
+                    l.get_mut(&channel).unwrap().push(line.clone());
+                }
+            });
         },
     );
 

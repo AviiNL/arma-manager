@@ -1,6 +1,7 @@
 mod client_only;
 mod credentials;
 mod dropzone;
+mod edit_view;
 mod header;
 mod left_sidebar;
 mod loading;
@@ -15,6 +16,7 @@ mod theme_select;
 pub use client_only::*;
 pub use credentials::*;
 pub use dropzone::*;
+pub use edit_view::*;
 pub use header::*;
 pub use left_sidebar::*;
 pub use loading::*;

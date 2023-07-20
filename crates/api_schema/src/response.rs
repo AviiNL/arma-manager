@@ -56,6 +56,11 @@ pub struct LogResponse {
     pub log: Vec<String>,
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ConfigResponse {
+    pub config: Vec<String>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Preset {
     pub id: i64,
@@ -86,10 +91,4 @@ pub enum PresetUpdate {
     Blacklisted(i64),
     Unblacklisted(i64),
     Delete(i64),
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
-pub struct ArmaConfig {
-    pub config: String,
-    // pub profile: String, // for difficulty settings etc
 }

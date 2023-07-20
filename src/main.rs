@@ -13,6 +13,7 @@ async fn main() -> anyhow::Result<()> {
     });
 
     arma::prepare_config().unwrap();
+    arma::prepare_profile().unwrap();
 
     steam::Steam::install().await.unwrap();
 

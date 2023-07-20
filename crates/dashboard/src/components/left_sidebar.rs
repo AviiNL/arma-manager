@@ -23,13 +23,17 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 <li>
                     <NavLink href={Page::Dashboard.path()} exact=true class="font-normal">
                         <i class="fa fa-home"/>
-                        "Dashboard"
+                        <s>
+                            "Dashboard"
+                        </s>
                     </NavLink>
                 </li>
                 <li>
                     <NavLink href={Page::Profile.path()} exact=true class="font-normal">
-                        <i class="fa fa-user"/>
-                        "Profile"
+                    <i class="fa fa-user"/>
+                        <s>
+                            "Profile"
+                        </s>
                     </NavLink>
                 </li>
 
@@ -45,6 +49,13 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 <div class="divider mt-0 mb-0"></div>
 
                 <li>
+                    <NavLink href={Page::Config.path()} exact=true class="font-normal">
+                        <i class="fa fa-cogs"/>
+                        "Configuration"
+                    </NavLink>
+                </li>
+
+                <li>
                     <NavLink href={Page::Presets.path()} exact=true class="font-normal">
                         <i class="fa fa-cubes"/>
                         "Mod Presets"
@@ -54,7 +65,9 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 <li>
                     <NavLink href={Page::Missions.path()} exact=true class="font-normal">
                         <i class="fa-solid fa-tents"/>
-                        "Missions"
+                        <s>
+                            "Missions"
+                        </s>
                     </NavLink>
                 </li>
             </ul>

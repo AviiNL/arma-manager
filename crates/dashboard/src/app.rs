@@ -78,9 +78,19 @@ pub fn App(cx: Scope) -> impl IntoView {
                             view! { cx, <Log /> }
                         }
                     />
+                    <Route path=Page::Config.path()
+                        view=move |cx| {
+                            view! { cx, <Config /> }
+                        }
+                    />
                     <Route path=Page::Presets.path()
                         view=move |cx| {
                             view! { cx, <Presets /> }
+                        }
+                    />
+                    <Route path=Page::Missions.path()
+                        view=move |cx| {
+                            view! { cx, <Blank title="Missions" /> }
                         }
                     />
                 </Route>

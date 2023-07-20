@@ -1,5 +1,6 @@
 pub mod authenticated_base;
 pub mod blank;
+pub mod config;
 pub mod log;
 pub mod login;
 pub mod presets;
@@ -7,6 +8,7 @@ pub mod register;
 
 pub use self::authenticated_base::*;
 pub use self::blank::*;
+pub use self::config::*;
 pub use self::log::*;
 pub use self::login::*;
 pub use self::presets::*;
@@ -21,6 +23,7 @@ pub enum Page {
     Dashboard,
     Profile,
     Logs,
+    Config,
     Presets,
     Missions,
 }
@@ -34,6 +37,7 @@ impl Page {
             Self::Dashboard => "",
             Self::Profile => "profile",
             Self::Logs => "logs",
+            Self::Config => "config",
             Self::Presets => "presets",
             Self::Missions => "missions",
         }

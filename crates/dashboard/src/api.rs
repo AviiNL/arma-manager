@@ -217,12 +217,18 @@ impl AuthorizedApi {
         self.send(Request::delete(&url).json(preset)?).await
     }
 
-    pub async fn get_config(&self) -> Result<ArmaConfig> {
+    pub async fn get_config(&self, channel: impl Into<String>) -> Result<ConfigResponse> {
         self.loading.set(Loading::Loading(Some("Loading config...")));
-        let url = format!("{}/arma/config", self.url);
+        let url = format!("{}/arma/config/{}", self.url, channel.into());
         let result = self.send(Request::get(&url)).await;
         self.loading.set(Loading::Ready);
         result
+    }
+
+    pub async fn save_config(&self, channel: impl Into<String>, content: impl Into<String>) -> Result<SimpleResponse> {
+        let url = format!("{}/arma/config/{}", self.url, channel.into());
+        self.send(Request::post(&url).json(&UpdateConfigSchema { config: content.into() })?)
+            .await
     }
 
     pub fn token(&self) -> &ApiToken {
