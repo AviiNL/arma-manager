@@ -231,6 +231,20 @@ impl AuthorizedApi {
             .await
     }
 
+    pub async fn upload_mission(&self, name: String, data: &[u8]) -> Result<SimpleResponse> {
+        let url = format!("{}/arma/missions", self.url);
+
+        // upload the file to the server
+        self.send(
+            Request::post(&url)
+                .header("Authorization", &self.auth_header_value())
+                .header("Content-Type", "application/octet-stream")
+                .header("Content-Disposition", &format!(r#"attachment; filename="{}""#, name))
+                .body(data.to_vec())?,
+        )
+        .await
+    }
+
     pub fn token(&self) -> &ApiToken {
         &self.token
     }
