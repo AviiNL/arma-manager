@@ -16,12 +16,7 @@ jobs:
           submodules: true
 
       - name: Set up Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-
-      - name: Set up Rust WASM toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@v1.4.4
         with:
           toolchain: nightly
           target: wasm32-unknown-unknown
@@ -52,11 +47,11 @@ jobs:
           cd $env:GITHUB_WORKSPACE/crates/web
           sqlx migrate run --database-url=sqlite:../../db.sqlite
 
-      - name: Copy .env.example to .env
-        run: cp .env.example .env
-
       - name: Build
         run: cargo leptos build --release
+
+      - name: Copy .env.example to .env
+        run: cp .env.example .env
 
       - name: Collect artifacts
         run: |
