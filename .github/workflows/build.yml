@@ -36,7 +36,7 @@ jobs:
       - name: Build CSS with TailwindCSS
         run: |
           cd $env:GITHUB_WORKSPACE/crates/dashboard
-          npx --yes tailwindcss -i ./style/input.css -o ./style/output.scss --watch
+          npx --yes tailwindcss -i ./style/input.css -o ./style/output.scss
 
       - name: Create empty database file
         run: touch db.sqlite
