@@ -78,7 +78,6 @@ jobs:
         if: success()
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: ncipollo/release-action@v1
         with:
-          name: release
-          path: release.zip
+          artifacts: "release.zip"
