@@ -90,7 +90,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                     />
                     <Route path=Page::Missions.path()
                         view=move |cx| {
-                            view! { cx, <Blank title="Missions" /> }
+                            view! { cx, <Missions /> }
                         }
                     />
                 </Route>

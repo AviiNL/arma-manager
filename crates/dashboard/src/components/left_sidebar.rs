@@ -65,9 +65,7 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 <li>
                     <NavLink href={Page::Missions.path()} exact=true class="font-normal">
                         <i class="fa-solid fa-tents"/>
-                        <s>
-                            "Missions"
-                        </s>
+                        "Missions"
                     </NavLink>
                 </li>
             </ul>

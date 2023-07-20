@@ -92,3 +92,8 @@ pub enum PresetUpdate {
     Unblacklisted(i64),
     Delete(i64),
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct MissionResponse {
+    pub missions: Vec<String>,
+}

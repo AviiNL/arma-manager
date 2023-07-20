@@ -24,6 +24,7 @@ pub enum Loading {
 
 pub type LogData = HashMap<String, Vec<String>>;
 pub type ConfigData = HashMap<String, Vec<String>>;
+pub type MissionData = Vec<String>;
 
 pub type PresetList = Vec<Preset>;
 
@@ -37,6 +38,7 @@ pub struct AppState {
     pub log: RwSignal<LogData>,
     pub presets: RwSignal<PresetList>,
     pub config: RwSignal<ConfigData>,
+    pub missions: RwSignal<MissionData>,
 }
 
 impl AppState {
@@ -50,6 +52,7 @@ impl AppState {
             log: create_rw_signal(cx, Default::default()),
             presets: create_rw_signal(cx, Default::default()),
             config: create_rw_signal(cx, Default::default()),
+            missions: create_rw_signal(cx, Default::default()),
         }
     }
 
@@ -77,6 +80,7 @@ impl AppState {
         let log_signal = self.log.clone();
         let preset_signal = self.presets.clone();
         let config_signal = self.config.clone();
+        let mission_signal = self.missions.clone();
 
         create_effect(cx, move |_| {
             if let Some(api) = api_signal.get() {
@@ -104,6 +108,7 @@ impl AppState {
                     setup_logs(cx, &api, &log_signal).await;
                     setup_presets(cx, &api, &preset_signal, &status_signal, &loading_signal).await;
                     setup_config(cx, &api, &config_signal).await;
+                    setup_missions(cx, &api, &mission_signal).await;
 
                     // only do this if we are on Login page
                     if route.path() == crate::pages::Page::Login.path().trim_start_matches("/") {
@@ -389,4 +394,13 @@ async fn setup_config(cx: Scope, api: &AuthorizedApi, config_signal: &RwSignal<C
     );
 
     api.add_abort_signal(abort_signal);
+}
+
+async fn setup_missions(cx: Scope, api: &AuthorizedApi, mission_signal: &RwSignal<MissionData>) {
+    let api = api.clone();
+    let mission_signal = mission_signal.clone();
+
+    if let Ok(new_data) = api.get_missions().await {
+        mission_signal.set(new_data.missions);
+    }
 }
