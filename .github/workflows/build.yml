@@ -16,10 +16,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           repository: aviinl/leptos
+          path: ../leptos
 
       - uses: actions/checkout@v2
         with:
           repository: aviinl/leptos-use
+          path: ../leptos-use
 
       - name: Set up Rust toolchain
         uses: actions-rs/toolchain@v1
