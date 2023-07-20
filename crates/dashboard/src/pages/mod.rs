@@ -3,16 +3,18 @@ pub mod blank;
 pub mod config;
 pub mod log;
 pub mod login;
+pub mod missions;
 pub mod presets;
 pub mod register;
 
-pub use self::authenticated_base::*;
-pub use self::blank::*;
-pub use self::config::*;
-pub use self::log::*;
-pub use self::login::*;
-pub use self::presets::*;
-pub use self::register::*;
+pub use authenticated_base::*;
+pub use blank::*;
+pub use config::*;
+pub use log::*;
+pub use login::*;
+pub use missions::*;
+pub use presets::*;
+pub use register::*;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub enum Page {

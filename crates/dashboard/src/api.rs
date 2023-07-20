@@ -1,8 +1,9 @@
+use std::io::Read;
 use std::{rc::Rc, sync::Mutex};
 
 use api_schema::{request::*, response::*, *};
 use futures::channel::oneshot;
-use gloo_net::http::{Request, Response};
+use gloo_net::http::{FormData, Request, Response};
 use leptos::{RwSignal, SignalSet};
 use serde::{de::DeserializeOwned, Deserializer};
 use serde_json::Value;
@@ -229,6 +230,29 @@ impl AuthorizedApi {
         let url = format!("{}/arma/config/{}", self.url, channel.into());
         self.send(Request::post(&url).json(&UpdateConfigSchema { config: content.into() })?)
             .await
+    }
+
+    pub async fn get_missions(&self) -> Result<MissionResponse> {
+        self.loading.set(Loading::Loading(Some("Loading missions...")));
+        let url = format!("{}/arma/mission", self.url);
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
+    }
+
+    pub async fn upload_mission(&self, file: &web_sys::File) -> Result<SimpleResponse> {
+        self.loading.set(Loading::Loading(Some("Uploading, Stand by...")));
+
+        let url = format!("{}/arma/mission", self.url);
+
+        let mut form_data = FormData::new().unwrap();
+        form_data.append_with_blob_and_filename("file", &file, &file.name());
+
+        let response = self.send(Request::post(&url).body(form_data)).await;
+
+        self.loading.set(Loading::Ready);
+
+        response
     }
 
     pub fn token(&self) -> &ApiToken {

@@ -1,4 +1,4 @@
-use axum::{middleware, routing::*, Router};
+use axum::{extract::DefaultBodyLimit, middleware, routing::*, Router};
 
 use crate::{handlers::*, jwt_auth::auth, AppState};
 
@@ -6,6 +6,9 @@ pub fn create_router(app_state: AppState) -> Router {
     let auth_layer = middleware::from_fn_with_state(app_state.clone(), auth);
 
     Router::new()
+        .route("/api/v1/arma/mission", post(upload_mission))
+        .layer(DefaultBodyLimit::max(1024 * 1024 * 1024)) // 1GB
+        .route("/api/v1/arma/mission", get(get_missions))
         // Protected routes
         .route("/api/v1/users/me", get(get_me_handler))
         .route("/api/v1/auth/logout", get(logout_handler))
