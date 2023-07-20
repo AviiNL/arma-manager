@@ -121,3 +121,27 @@ impl UserRepository {
         Ok(user)
     }
 }
+
+impl UserRepository {
+    // update password
+    pub async fn update_password(&self, id: Uuid, password: &str) -> RepositoryResult<()> {
+        let salt = SaltString::generate(&mut OsRng);
+        let hashed_password = Argon2::default()
+            .hash_password(password.as_bytes(), &salt)
+            .map_err(|_| "Failed to hash password")?;
+
+        let hashed_password = hashed_password.to_string();
+
+        sqlx::query!(
+            r#"
+            UPDATE users SET password = $1 WHERE id = $2
+            "#,
+            hashed_password,
+            id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+}
