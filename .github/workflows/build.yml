@@ -20,6 +20,12 @@ jobs:
         with:
           toolchain: nightly
 
+      - name: Set up Rust WASM toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: wasm32-unknown-unknown
+
       - name: Install Node.js and npm
         uses: actions/setup-node@v2
         with:
