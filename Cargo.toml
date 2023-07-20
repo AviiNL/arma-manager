@@ -9,6 +9,7 @@ edition = "2021"
 
 [workspace]
 members = ["crates/*"]
+exclude = ["./leptos", "./leptos-use"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -32,6 +33,13 @@ sqlx = { version = "0.7.0", features = [
     "time",
     "uuid",
 ] }
+
+# Leptos as Submodule
+leptos.path = "./leptos/leptos"
+leptos_meta.path = "./leptos/meta"
+leptos_router.path = "./leptos/router"
+leptos_axum.path = "./leptos/integrations/axum"
+leptos-use.path = "./leptos-use"
 
 # Internal Packages
 api_schema.path = "crates/api_schema"

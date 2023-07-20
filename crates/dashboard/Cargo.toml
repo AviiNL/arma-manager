@@ -30,12 +30,11 @@ gloo-storage = "0.2"
 gloo-timers = "0.2"
 multipart = "0.18.0"
 
-leptos = { path = "../../../leptos/leptos", features = ["tracing"] }
-leptos_meta = { path = "../../../leptos/meta" }
-leptos_router = { path = "../../../leptos/router" }
-leptos_axum = { path = "../../../leptos/integrations/axum", optional = true }
-
-leptos-use = { path = "../../../leptos-use" }
+leptos = { workspace = true, features = ["tracing"] }
+leptos_axum = { workspace = true, optional = true }
+leptos_meta.workspace = true
+leptos_router.workspace = true
+leptos-use.workspace = true
 
 http = "0.2"
 thiserror = "1"

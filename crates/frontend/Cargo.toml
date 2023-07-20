@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 dashboard = { path = "../dashboard", features = ["hydrate"] }
 
-leptos = { path = "../../../leptos/leptos", features = ["hydrate"] }
+leptos = { workspace = true, features = ["hydrate"] }
 
 tracing-subscriber = { workspace = true }
 tracing-subscriber-wasm = { version = "0.1.0" }

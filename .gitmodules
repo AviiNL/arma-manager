@@ -1,0 +1,6 @@
+[submodule "leptos"]
+	path = leptos
+	url = https://github.com/aviinl/leptos
+[submodule "leptos-use"]
+	path = leptos-use
+	url = https://github.com/aviinl/leptos-use
