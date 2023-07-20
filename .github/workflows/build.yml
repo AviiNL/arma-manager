@@ -39,7 +39,7 @@ jobs:
           npx --yes tailwindcss -i ./style/input.css -o ./style/output.scss
 
       - name: Create empty database file
-        run: touch db.sqlite
+        run: New-Item -Name db.sqlite -ItemType File
 
       - name: Run database migrations
         run: |
