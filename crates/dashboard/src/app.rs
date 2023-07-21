@@ -46,6 +46,9 @@ pub fn App(cx: Scope) -> impl IntoView {
     provide_context(cx, AppState::new(cx));
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
 
+    // an effect that checks if our token is still valid, and if not, run cleanup and logout
+    // probably not a good idea to pull the server on every request to validate the token...
+
     let html_attributes = app_state.load_theme(cx);
 
     view! { cx,
@@ -110,6 +113,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                 />
             </Routes>
         </Router>
+        <ToastContainer />
         <Loading />
     }
 }

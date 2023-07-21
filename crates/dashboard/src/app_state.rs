@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     api::AuthorizedApi,
     app::{API_TOKEN_STORAGE_KEY, DEFAULT_API_URL},
-    components::Theme,
+    components::{Theme, Toast, ToastStyle},
     sse::create_sse,
 };
 
@@ -39,6 +39,7 @@ pub struct AppState {
     pub presets: RwSignal<PresetList>,
     pub config: RwSignal<ConfigData>,
     pub missions: RwSignal<MissionData>,
+    pub toasts: RwSignal<Vec<Toast>>,
 }
 
 impl AppState {
@@ -53,6 +54,7 @@ impl AppState {
             presets: create_rw_signal(cx, Default::default()),
             config: create_rw_signal(cx, Default::default()),
             missions: create_rw_signal(cx, Default::default()),
+            toasts: create_rw_signal(cx, Default::default()),
         }
     }
 
@@ -64,7 +66,18 @@ impl AppState {
             self.status.set(None);
             self.log.set(Default::default());
             self.presets.set(Default::default());
+            self.config.set(Default::default());
+            self.missions.set(Default::default());
         }
+    }
+
+    pub fn toast(&self, cx: Scope, message: impl Into<String>, style: Option<ToastStyle>) {
+        let message = message.into();
+        let toast = Toast::new(cx, message, style);
+        self.toasts.update(|t| {
+            // push the new toast to the front of the vec
+            t.insert(0, toast);
+        });
     }
 
     pub fn check_auth(&self, cx: Scope) {

@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::io::Read;
 use std::{rc::Rc, sync::Mutex};
 
@@ -277,7 +278,7 @@ type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     #[error(transparent)]
     Fetch(#[from] gloo_net::Error),
-    #[error("{0:?}")]
+    #[error("{}", .0.message)]
     Api(api_schema::response::Error),
 }
 

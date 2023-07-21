@@ -20,6 +20,11 @@ pub fn SteamCmdDialog(cx: Scope) -> impl IntoView {
                 }
                 Err(err) => {
                     tracing::error!("Unable to cancel arma update: {err}");
+                    app_state.toast(
+                        cx,
+                        format!("Unable to cancel arma update: {err}"),
+                        Some(ToastStyle::Error),
+                    );
                 }
             }
         }

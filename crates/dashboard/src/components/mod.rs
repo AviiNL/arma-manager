@@ -12,6 +12,7 @@ mod progress;
 mod server_buttons;
 mod steamcmd_dialog;
 mod theme_select;
+mod toast_container;
 
 pub use client_only::*;
 pub use credentials::*;
@@ -27,3 +28,4 @@ pub use progress::*;
 pub use server_buttons::*;
 pub use steamcmd_dialog::*;
 pub use theme_select::*;
+pub use toast_container::*;

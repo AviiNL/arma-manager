@@ -2,7 +2,7 @@ use api_schema::response::{State, Status};
 use http::status;
 use leptos::{*, ev};
 
-use crate::{api::AuthorizedApi, app_state::AppState};
+use crate::{api::AuthorizedApi, app_state::AppState, components::ToastStyle};
 
 #[component]
 pub fn ServerButtons(cx: Scope) -> impl IntoView {
@@ -21,7 +21,14 @@ pub fn ServerButtons(cx: Scope) -> impl IntoView {
                     tracing::info!("Updated arma!");
                 }
                 Err(err) => {
+                    status.update(|status| {
+                        let Some(mut status) = status.as_mut() else {
+                            return;
+                        };
+                        status.arma = State::Stopped;
+                    });
                     tracing::error!("Unable to update arma: {err}");
+                    app_state.toast(cx, format!("Unable to update arma: {err}"), Some(ToastStyle::Error));
                 }
             }
         }
@@ -35,7 +42,14 @@ pub fn ServerButtons(cx: Scope) -> impl IntoView {
                     tracing::info!("Started arma!");
                 }
                 Err(err) => {
+                    status.update(|status| {
+                        let Some(mut status) = status.as_mut() else {
+                            return;
+                        };
+                        status.arma = State::Stopped;
+                    });
                     tracing::error!("Unable to start arma: {err}");
+                    app_state.toast(cx, format!("Unable to start arma: {err}"), Some(ToastStyle::Error));
                 }
             }
         }
@@ -49,7 +63,14 @@ pub fn ServerButtons(cx: Scope) -> impl IntoView {
                     tracing::info!("Stopped arma!");
                 }
                 Err(err) => {
+                    status.update(|status| {
+                        let Some(mut status) = status.as_mut() else {
+                            return;
+                        };
+                        status.arma = State::Stopped;
+                    });
                     tracing::error!("Unable to stop arma: {err}");
+                    app_state.toast(cx, format!("Unable to stop arma: {err}"), Some(ToastStyle::Error));
                 }
             }
         }
@@ -58,14 +79,15 @@ pub fn ServerButtons(cx: Scope) -> impl IntoView {
     let restart_arma = create_action(cx, move |_| {
         let api = api.clone().get_untracked().expect("to have found the api provided");
         async move {
-            match api.restart_arma().await {
-                Ok(_) => {
-                    tracing::info!("Restarted arma!");
-                }
-                Err(err) => {
-                    tracing::error!("Unable to restart arma: {err}");
-                }
-            }
+            // match api.restart_arma().await {
+            //     Ok(_) => {
+            //         tracing::info!("Restarted arma!");
+            //     }
+            //     Err(err) => {
+            //         tracing::error!("Unable to restart arma: {err}");
+                    app_state.toast(cx, format!("Not yet implemented, use Stop and Start instead."), Some(ToastStyle::Warning));
+            //     }
+            // }
         }
     });
 

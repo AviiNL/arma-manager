@@ -47,6 +47,11 @@ pub fn Login(cx: Scope) -> impl IntoView {
                         api::Error::Api(err) => err.message, // user error
                     };
                     tracing::error!("Unable to login with {}: {msg}", credentials.email);
+                    app_state.toast(
+                        cx,
+                        format!("Unable to login with {}: {msg}", credentials.email),
+                        Some(ToastStyle::Error),
+                    );
                     set_login_error.update(|e| *e = Some(msg));
                 }
             }

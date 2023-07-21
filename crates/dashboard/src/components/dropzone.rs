@@ -81,7 +81,8 @@ async fn validate_and_upload(cx: Scope, api: &AuthorizedApi, file: &File) -> Res
         return Ok(());
     }
 
-    tracing::error!("Unknown file type");
+    let app_state = use_context::<AppState>(cx).expect("AppState to exist");
+    app_state.toast(cx, "Invalid file type", Some(super::ToastStyle::Error));
 
     Ok(())
 }
