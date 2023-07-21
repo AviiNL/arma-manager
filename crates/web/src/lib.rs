@@ -57,7 +57,7 @@ pub async fn start() {
 
     let app = Router::new().merge(api).merge(dashboard);
 
-    tracing::info!("Webserver listening on port 3000");
+    println!("Webserver listening on port 3000");
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service_with_connect_info::<SocketAddr>())
