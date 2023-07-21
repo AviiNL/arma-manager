@@ -57,11 +57,11 @@ impl AuthorizedApi {
     }
 
     pub fn add_abort_signal(&self, signal: oneshot::Sender<()>) {
-        self.sse_abort_signals.lock().unwrap().push(signal);
+        self.sse_abort_signals.lock().expect("Poisoned Mutex").push(signal);
     }
 
     pub fn run_abort_signals(&self) {
-        let mut signals = self.sse_abort_signals.lock().unwrap();
+        let mut signals = self.sse_abort_signals.lock().expect("Poisoned Mutex");
         for signal in signals.drain(..) {
             if let Err(e) = signal.send(()) {
                 tracing::error!("Error sending abort signal: {:?}", e);
@@ -257,7 +257,7 @@ impl AuthorizedApi {
 
         let url = format!("{}/arma/mission", self.url);
 
-        let mut form_data = FormData::new().unwrap();
+        let mut form_data = FormData::new().expect("This to work");
         form_data.append_with_blob_and_filename("file", &file, &file.name());
 
         let response = self.send(Request::post(&url).body(form_data)).await;
@@ -280,6 +280,8 @@ pub enum Error {
     Fetch(#[from] gloo_net::Error),
     #[error("{}", .0.message)]
     Api(api_schema::response::Error),
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
 }
 
 impl From<api_schema::response::Error> for Error {
@@ -297,11 +299,15 @@ where
     // ensure we've got 2xx status
     if response.ok() {
         let response: Value = response.json().await?;
-        let response = response.as_object().unwrap();
+        let response = response.as_object().expect("Response to be an object");
 
-        let response = response.iter().find(|(k, v)| k != &"status").unwrap().1;
+        let response = response
+            .iter()
+            .find(|(k, v)| k != &"status")
+            .expect("Response to contain an extra key")
+            .1;
 
-        Ok(T::deserialize(response).unwrap())
+        Ok(T::deserialize(response)?)
     } else {
         Err(response.json::<api_schema::response::Error>().await?.into())
     }

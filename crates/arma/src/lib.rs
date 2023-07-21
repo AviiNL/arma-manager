@@ -117,10 +117,6 @@ pub fn get_default_parameters() -> Vec<String> {
     params.push("-hugePages".to_string());
     params.push("-limitFPS=80".to_string());
 
-    // TODO: add these to config
-    // params.push("-port 2302".to_string());
-    // params.push("-config=C:\\Users\\DCS\\Documents\\Arma 3\\server.cfg".to_string());
-
     params
 }
 

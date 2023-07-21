@@ -53,14 +53,8 @@ pub fn Register(cx: Scope) -> impl IntoView {
                         set_register_error.update(|e| *e = None);
                     }
                     Err(err) => {
-                        let msg = match err {
-                            api::Error::Fetch(js_err) => {
-                                format!("{js_err:?}")
-                            }
-                            api::Error::Api(err) => err.message,
-                        };
-                        tracing::warn!("Unable to register new account for {}: {msg}", credentials.email);
-                        set_register_error.update(|e| *e = Some(msg));
+                        tracing::warn!("Unable to register new account for {}: {err}", credentials.email);
+                        set_register_error.update(|e| *e = Some(err.to_string()));
                     }
                 }
             }
