@@ -206,7 +206,7 @@ impl PresetRepository {
         }
 
         if let Some(position) = schema.position {
-            query.push(" position = ").push_bind(position);
+            query.push(", position = ").push_bind(position);
         }
 
         query.push(" WHERE id = ").push_bind(schema.id);

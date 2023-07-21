@@ -1,7 +1,7 @@
-use api_schema::request::RegisterUserSchema;
+use api_schema::request::{RegisterUserSchema, UpdateUserSchema};
 use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
 use rand_core::OsRng;
-use sqlx::SqlitePool;
+use sqlx::{QueryBuilder, SqlitePool};
 use uuid::Uuid;
 
 use crate::model::*;
@@ -124,24 +124,31 @@ impl UserRepository {
 
 impl UserRepository {
     // update password
-    pub async fn update_password(&self, id: Uuid, password: &str) -> RepositoryResult<()> {
-        let salt = SaltString::generate(&mut OsRng);
-        let hashed_password = Argon2::default()
-            .hash_password(password.as_bytes(), &salt)
-            .map_err(|_| "Failed to hash password")?;
-
-        let hashed_password = hashed_password.to_string();
-
-        sqlx::query!(
+    pub async fn update(&self, id: Uuid, body: &UpdateUserSchema) -> RepositoryResult<User> {
+        let mut query = QueryBuilder::new(
             r#"
-            UPDATE users SET password = $1 WHERE id = $2
-            "#,
-            hashed_password,
-            id
-        )
-        .execute(&self.pool)
-        .await?;
+            UPDATE users
+            SET "#,
+        );
 
-        Ok(())
+        query.push("name = ").push_bind(body.name.clone());
+        query.push(", email = ").push_bind(body.email.clone());
+
+        if let Some(password) = &body.password {
+            let salt = SaltString::generate(&mut OsRng);
+            let hashed_password = Argon2::default()
+                .hash_password(password.as_bytes(), &salt)
+                .map_err(|_| "Failed to hash password")?;
+
+            let hashed_password = hashed_password.to_string();
+
+            query.push(", password = ").push_bind(hashed_password);
+        }
+
+        query.push(" WHERE id = ").push_bind(id);
+
+        query.push(r#" RETURNING id, name, email, verified, password, roles, created_at, updated_at "#);
+
+        Ok(query.build_query_as::<User>().fetch_one(&self.pool).await?)
     }
 }

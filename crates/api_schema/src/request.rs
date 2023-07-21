@@ -14,6 +14,18 @@ pub struct LoginUserSchema {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct UpdateUserSchema {
+    pub name: String,
+    pub email: String,
+    pub password: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct RevokeTokenSchema {
+    pub token: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CreatePresetSchema {
     pub name: String,
     pub items: Vec<PresetItemSchema>,

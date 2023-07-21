@@ -89,8 +89,7 @@ impl UserTokenRepository {
 }
 
 impl UserTokenRepository {
-    pub async fn delete(&self, user_id: Uuid, token: UserToken) -> RepositoryResult<()> {
-        let token = token.token;
+    pub async fn delete(&self, user_id: Uuid, token: Uuid) -> RepositoryResult<()> {
         sqlx::query!(
             r#"
             DELETE FROM user_tokens WHERE token = ? AND user_id = ?

@@ -5,6 +5,7 @@ pub mod log;
 pub mod login;
 pub mod missions;
 pub mod presets;
+pub mod profile;
 pub mod register;
 
 pub use authenticated_base::*;
@@ -14,6 +15,7 @@ pub use log::*;
 pub use login::*;
 pub use missions::*;
 pub use presets::*;
+pub use profile::*;
 pub use register::*;
 
 #[derive(Debug, Clone, Copy, Default)]

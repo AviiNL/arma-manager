@@ -30,9 +30,8 @@ pub fn AuthenticatedBase(cx: Scope) -> impl IntoView {
             <input id="left-sidebar-drawer" type="checkbox" class="drawer-toggle" />
             <div class="drawer-content flex flex-col">
                 <Header />
-                <main class="flex flex-1 overflow-y-auto pt-6 px-6  bg-base-200">
+                <main class="flex flex-1 overflow-y-auto pt-6 px-6 bg-base-200 flex-col md:flex-row">
                     <Outlet/>
-                    <div class="h-16"></div>
                 </main>
             </div>
             <LeftSidebar />

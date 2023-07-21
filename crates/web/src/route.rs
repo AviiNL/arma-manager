@@ -11,7 +11,9 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/api/v1/arma/mission", get(get_missions))
         // Protected routes
         .route("/api/v1/users/me", get(get_me_handler))
+        .route("/api/v1/users/me", patch(update_user_handler))
         .route("/api/v1/auth/logout", get(logout_handler))
+        .route("/api/v1/auth/token", delete(revoke_token))
         .route("/api/v1/steam/status/:app_id", get(update_arma))
         .route("/api/v1/status", get(api_status_handler))
         .route("/api/v1/arma/update", get(update_arma))

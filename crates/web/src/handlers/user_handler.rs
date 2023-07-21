@@ -1,10 +1,10 @@
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 
 use api_schema::{request::*, response::*};
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use axum::{
     extract::{ConnectInfo, State},
-    http::{header, StatusCode},
+    http::{header, HeaderMap, StatusCode},
     response::IntoResponse,
     Extension, Json,
 };
@@ -48,6 +48,7 @@ pub async fn register_user_handler(
 }
 
 pub async fn login_user_handler(
+    headers: HeaderMap,
     State(data): State<AppState>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Extension(user_repository): Extension<UserRepository>,
@@ -84,8 +85,13 @@ pub async fn login_user_handler(
             .into());
     }
 
+    let ip_address = headers
+        .get("X-Forwarded-For")
+        .and_then(|ip| Some(ip.to_str().ok()?.parse::<IpAddr>().ok()?))
+        .unwrap_or_else(|| addr.ip());
+
     let user_token = token_repository
-        .create(user.id, addr.ip())
+        .create(user.id, ip_address)
         .await
         .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
 
@@ -126,13 +132,66 @@ pub async fn login_user_handler(
     Ok(response)
 }
 
+pub async fn update_user_handler(
+    Extension(user_repository): Extension<UserRepository>,
+    Extension(token_repository): Extension<UserTokenRepository>,
+    Extension(user): Extension<User>,
+    Json(body): Json<UpdateUserSchema>,
+) -> ApiResult<impl IntoResponse> {
+    let email = body.email.to_owned().to_ascii_lowercase();
+
+    // only test email if it changed
+    if email != user.email {
+        let user_exists = user_repository
+            .exists(&email)
+            .await
+            .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+        if user_exists {
+            return Err(ErrorResponse::new("Email already in use").into());
+        }
+    }
+
+    let user = user_repository
+        .update(user.id, &body)
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    let tokens = token_repository
+        .all_by_user_id(user.id)
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    Ok(ApiResponse::new(filter_user_record(&user, &tokens)).with_root_key_name("user"))
+}
+
+pub async fn revoke_token(
+    Extension(token_repository): Extension<UserTokenRepository>,
+    Extension(user): Extension<User>,
+    Json(body): Json<RevokeTokenSchema>,
+) -> ApiResult<impl IntoResponse> {
+    let token = uuid::Uuid::parse_str(&body.token)
+        .map_err(|_| ErrorResponse::new("Invalid token").with_status_code(StatusCode::BAD_REQUEST))?;
+    token_repository
+        .delete(user.id, token)
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    let tokens = token_repository
+        .all_by_user_id(user.id)
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    Ok(ApiResponse::new(filter_user_record(&user, &tokens)).with_root_key_name("user"))
+}
+
 pub async fn logout_handler(
     Extension(token_repository): Extension<UserTokenRepository>,
     Extension(user): Extension<User>,
     Extension(token): Extension<UserToken>,
 ) -> ApiResult<impl IntoResponse> {
     token_repository
-        .delete(user.id, token)
+        .delete(user.id, token.token)
         .await
         .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
 
