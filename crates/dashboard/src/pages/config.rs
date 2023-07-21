@@ -13,13 +13,12 @@ pub fn Config(cx: Scope) -> impl IntoView {
     view! { cx,
         <div class="card w-full flex-1 p-6 bg-base-100 shadow-xl mt-2 mb-4">
             <div class="text-xl font-semibold inline-block">
-                // dropdown for server.cfg, basic.cfg, profile.cfg, etc
                 <div class="dropdown">
                     <label class="btn gap-1 normal-case btn-ghost" tabindex="0">
                         {move || profile.get()}
                         <i class="fa fa-caret-down"></i>
                     </label>
-                    <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-fit">
+                    <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-fit text-sm">
                         <li>
                             <div class="flex flex-1 grow items-center" onClick="document.activeElement.blur();" on:click=move |_| profile.set("server.cfg".to_string())>
                                 <a href="#">"server.cfg"</a>

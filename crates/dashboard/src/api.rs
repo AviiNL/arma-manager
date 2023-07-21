@@ -92,12 +92,23 @@ impl AuthorizedApi {
         result
     }
 
+    pub async fn revoke_token(&self, token: &RevokeTokenSchema) -> Result<FilteredUser> {
+        let url = format!("{}/auth/token", self.url);
+        let result = self.send(Request::delete(&url).json(token)?).await;
+        result
+    }
+
     pub async fn user_info(&self) -> Result<FilteredUser> {
         self.loading.set(Loading::Loading(Some("Loading user info...")));
         let url = format!("{}/users/me", self.url);
         let result = self.send(Request::get(&url)).await;
         self.loading.set(Loading::Ready);
         result
+    }
+
+    pub async fn update_user(&self, user: &UpdateUserSchema) -> Result<FilteredUser> {
+        let url = format!("{}/users/me", self.url);
+        self.send(Request::patch(&url).json(user)?).await
     }
 
     pub async fn health_check(&self) -> Result<SimpleResponse> {

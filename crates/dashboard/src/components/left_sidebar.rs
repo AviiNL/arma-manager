@@ -30,10 +30,8 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 </li>
                 <li>
                     <NavLink href={Page::Profile.path()} exact=true class="font-normal">
-                    <i class="fa fa-user"/>
-                        <s>
-                            "Profile"
-                        </s>
+                        <i class="fa fa-user"/>
+                        "Profile"
                     </NavLink>
                 </li>
 

@@ -77,12 +77,19 @@ pub async fn auth<B>(
     let token_user =
         token_user.ok_or_else(|| ErrorResponse::new("Invalid Token").with_status_code(StatusCode::UNAUTHORIZED))?;
 
+    // this ip address doesnt take proxy into account
     let user_ip = token_user
         .ip
         .parse::<IpAddr>()
         .map_err(|_| ErrorResponse::new("Invalid Token").with_status_code(StatusCode::UNAUTHORIZED))?;
 
-    if user_ip != addr.ip() {
+    let ip_address = req
+        .headers()
+        .get("X-Forwarded-For")
+        .and_then(|ip| Some(ip.to_str().ok()?.parse::<IpAddr>().ok()?))
+        .unwrap_or_else(|| addr.ip());
+
+    if user_ip != ip_address {
         return Err(ErrorResponse::new("Invalid Token")
             .with_status_code(StatusCode::UNAUTHORIZED)
             .into());
