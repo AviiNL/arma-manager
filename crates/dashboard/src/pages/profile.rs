@@ -1,10 +1,7 @@
-use api_schema::{
-    request::{RevokeTokenSchema, UpdateUserSchema},
-    response::FilteredUserToken,
-};
+use api_schema::{request::*, response::*};
 use leptos::*;
 
-use crate::app_state::AppState;
+use crate::{app_state::AppState, components::ToastStyle};
 
 #[component]
 pub fn Profile(cx: Scope) -> impl IntoView {
@@ -51,6 +48,7 @@ pub fn Profile(cx: Scope) -> impl IntoView {
         let confirm_password = confirm_password_signal.get_untracked();
         async move {
             if !password.is_empty() && password != confirm_password {
+                app_state.toast(cx, "Passwords do not match", Some(ToastStyle::Error));
                 return;
             }
 
@@ -62,10 +60,15 @@ pub fn Profile(cx: Scope) -> impl IntoView {
                     password: if password.is_empty() { None } else { Some(password) },
                 })
                 .await;
-            if let Ok(new_user) = new_user {
-                user.set(Some(new_user));
-                password_signal.set(String::default());
-                confirm_password_signal.set(String::default());
+            match new_user {
+                Ok(new_user) => {
+                    user.set(Some(new_user));
+                    password_signal.set(String::default());
+                    confirm_password_signal.set(String::default());
+                }
+                Err(err) => {
+                    app_state.toast(cx, format!("Unable to update user: {}", err), Some(ToastStyle::Error));
+                }
             }
         }
     });
