@@ -7,6 +7,7 @@ pub mod missions;
 pub mod presets;
 pub mod profile;
 pub mod register;
+pub mod users;
 
 pub use authenticated_base::*;
 pub use blank::*;
@@ -17,6 +18,7 @@ pub use missions::*;
 pub use presets::*;
 pub use profile::*;
 pub use register::*;
+pub use users::*;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub enum Page {
@@ -26,6 +28,7 @@ pub enum Page {
     Home,
     Dashboard,
     Profile,
+    Users,
     Logs,
     Config,
     Presets,
@@ -40,10 +43,13 @@ impl Page {
             Self::Home => "/console",
             Self::Dashboard => "",
             Self::Profile => "profile",
+            Self::Users => "users",
             Self::Logs => "logs",
             Self::Config => "config",
             Self::Presets => "presets",
             Self::Missions => "missions",
         }
     }
+
+    // pub fn protect(&self, &[Role]) -> bool {}
 }

@@ -47,6 +47,11 @@ pub fn Profile(cx: Scope) -> impl IntoView {
         let password = password_signal.get_untracked();
         let confirm_password = confirm_password_signal.get_untracked();
         async move {
+            if !email.contains('@') {
+                app_state.toast(cx, "Invalid email", Some(ToastStyle::Error));
+                return;
+            }
+
             if !password.is_empty() && password != confirm_password {
                 app_state.toast(cx, "Passwords do not match", Some(ToastStyle::Error));
                 return;
@@ -55,9 +60,11 @@ pub fn Profile(cx: Scope) -> impl IntoView {
             let api = app_state.api.get_untracked().expect("api to exist");
             let new_user = api
                 .update_user(&UpdateUserSchema {
-                    name: name,
-                    email: email,
+                    id: None,
+                    name,
+                    email,
                     password: if password.is_empty() { None } else { Some(password) },
+                    verified: None,
                 })
                 .await;
             match new_user {
@@ -79,9 +86,9 @@ pub fn Profile(cx: Scope) -> impl IntoView {
             <div class="divider mt-2"></div>
             <div class="max-w-full h-full overflow-y-auto">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="form-control w-full undefined">
+                    <div class="form-control w-full">
                         <label class="label">
-                            <span class="label-text text-base-content undefined">"Name"</span>
+                            <span class="label-text text-base-content">"Name"</span>
                         </label>
                         <input
                             type="text"
@@ -90,9 +97,9 @@ pub fn Profile(cx: Scope) -> impl IntoView {
                             prop:value=move || name_signal.get()
                         />
                     </div>
-                    <div class="form-control w-full undefined">
+                    <div class="form-control w-full">
                         <label class="label">
-                            <span class="label-text text-base-content undefined">"Email"</span>
+                            <span class="label-text text-base-content">"Email"</span>
                         </label>
                         <input
                             type="text"
@@ -101,9 +108,9 @@ pub fn Profile(cx: Scope) -> impl IntoView {
                             prop:value=move || email_signal.get()
                         />
                     </div>
-                    <div class="form-control w-full undefined">
+                    <div class="form-control w-full">
                         <label class="label">
-                            <span class="label-text text-base-content undefined">"Change Password"</span>
+                            <span class="label-text text-base-content">"Change Password"</span>
                         </label>
                         <input
                             type="password"
@@ -112,9 +119,9 @@ pub fn Profile(cx: Scope) -> impl IntoView {
                             on:input={move |ev| password_signal.set(event_target_value(&ev))}
                         />
                     </div>
-                    <div class="form-control w-full undefined">
+                    <div class="form-control w-full">
                         <label class="label">
-                            <span class="label-text text-base-content undefined">"Confirm Change Password"</span>
+                            <span class="label-text text-base-content">"Confirm Change Password"</span>
                         </label>
                         <input
                             type="password"

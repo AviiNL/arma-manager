@@ -76,6 +76,11 @@ pub fn App(cx: Scope) -> impl IntoView {
                             view! { cx, <Profile /> }
                         }
                     />
+                    <Route path=Page::Users.path()
+                        view=move |cx| {
+                            view! { cx, <Users /> }
+                        }
+                    />
                     <Route path=Page::Logs.path()
                         view=move |cx| {
                             view! { cx, <Log /> }

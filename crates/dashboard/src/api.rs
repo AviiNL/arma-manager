@@ -112,6 +112,14 @@ impl AuthorizedApi {
         self.send(Request::patch(&url).json(user)?).await
     }
 
+    pub async fn get_users(&self) -> Result<Vec<FilteredUser>> {
+        self.loading.set(Loading::Loading(Some("Loading users...")));
+        let url = format!("{}/users", self.url);
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
+    }
+
     pub async fn health_check(&self) -> Result<SimpleResponse> {
         self.loading.set(Loading::Loading(Some("Checking health...")));
         let url = format!("{}/auth/health_check", self.url);
