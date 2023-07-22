@@ -1,7 +1,3 @@
-// selected user signal Option<FilteredUser>
-// this page does _not_ need to be as dynamic as everything else
-// eg, no need for sse, if we're on the page, and a user creates a new account, needing a manual refresh is fine
-
 use api_schema::{request::UpdateUserSchema, response::FilteredUser};
 use leptos::*;
 use leptos_use::on_click_outside;
