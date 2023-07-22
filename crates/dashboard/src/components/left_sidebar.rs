@@ -34,6 +34,12 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                         "Profile"
                     </NavLink>
                 </li>
+                <li>
+                    <NavLink href={Page::Users.path()} exact=true class="font-normal">
+                        <i class="fa fa-users"/>
+                        "Users"
+                    </NavLink>
+                </li>
 
                 <div class="divider mt-0 mb-0"></div>
 

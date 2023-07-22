@@ -40,19 +40,13 @@ pub fn Login(cx: Scope) -> impl IntoView {
                     authorized_api.update(|v| *v = Some(res));
                 }
                 Err(err) => {
-                    let msg = match err {
-                        api::Error::Fetch(js_err) => {
-                            format!("{js_err:?}") // 500 error
-                        }
-                        api::Error::Api(err) => err.message, // user error
-                    };
-                    tracing::error!("Unable to login with {}: {msg}", credentials.email);
+                    tracing::error!("Unable to login with {}: {err}", credentials.email);
                     app_state.toast(
                         cx,
-                        format!("Unable to login with {}: {msg}", credentials.email),
+                        format!("Unable to login with {}: {err}", credentials.email),
                         Some(ToastStyle::Error),
                     );
-                    set_login_error.update(|e| *e = Some(msg));
+                    set_login_error.update(|e| *e = Some(err.to_string()));
                 }
             }
         }

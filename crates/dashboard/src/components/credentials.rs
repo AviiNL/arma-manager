@@ -26,7 +26,7 @@ pub fn LoginForm(
         <div class="relative flex flex-col items-center justify-center h-screen overflow-hidden">
             <div class="w-full p-6 bg-base-200 border-t-4 border-accent rounded-md shadow-md border-top lg:max-w-lg">
                 <form class="space-y-4" on:submit=|ev| ev.prevent_default()>
-                    {move || { // TODO: Format errors nicely
+                    {move || {
                         error
                             .get()
                             .map(|err| {

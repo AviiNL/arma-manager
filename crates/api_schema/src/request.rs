@@ -15,9 +15,11 @@ pub struct LoginUserSchema {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateUserSchema {
+    pub id: Option<String>, // if none, it's self
     pub name: String,
     pub email: String,
     pub password: Option<String>,
+    pub verified: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

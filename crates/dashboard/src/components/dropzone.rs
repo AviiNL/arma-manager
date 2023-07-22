@@ -31,8 +31,13 @@ pub fn Dropzone(cx: Scope) -> impl IntoView {
 
             // called when files are dropped on zone
             for file in event.files {
-                validate_and_upload(cx, &api, &file).await.unwrap();
-                // TODO: handle errors
+                if let Err(e) = validate_and_upload(cx, &api, &file).await {
+                    app_state.toast(
+                        cx,
+                        &format!("Failed to upload file: {}", e),
+                        Some(super::ToastStyle::Error),
+                    );
+                }
             }
 
             loading.set(Loading::Ready);

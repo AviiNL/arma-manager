@@ -10,6 +10,7 @@ use axum::{
 };
 use axum_extra::extract::cookie::{Cookie, SameSite};
 use jsonwebtoken::{encode, EncodingKey, Header};
+use uuid::Uuid;
 
 use crate::{
     model::{TokenClaims, User, UserToken},
@@ -140,6 +141,18 @@ pub async fn update_user_handler(
 ) -> ApiResult<impl IntoResponse> {
     let email = body.email.to_owned().to_ascii_lowercase();
 
+    let id = if let Some(id) = body.id.as_ref() {
+        Uuid::parse_str(&id).map_err(|_| ErrorResponse::new("Invalid id").with_status_code(StatusCode::BAD_REQUEST))?
+    } else {
+        user.id
+    };
+
+    let user = user_repository
+        .get_by_id(id)
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?
+        .ok_or_else(|| ErrorResponse::new("User not found").with_status_code(StatusCode::NOT_FOUND))?;
+
     // only test email if it changed
     if email != user.email {
         let user_exists = user_repository
@@ -153,7 +166,7 @@ pub async fn update_user_handler(
     }
 
     let user = user_repository
-        .update(user.id, &body)
+        .update(id, &body)
         .await
         .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
 
@@ -223,6 +236,22 @@ pub async fn get_me_handler(
         .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
 
     Ok(ApiResponse::new(filter_user_record(&user, &tokens)).with_root_key_name("user"))
+}
+
+pub async fn get_users_without_tokens(
+    Extension(user_repository): Extension<UserRepository>,
+) -> ApiResult<impl IntoResponse> {
+    let users = user_repository
+        .all()
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    Ok(ApiResponse::new(
+        users
+            .into_iter()
+            .map(|user| filter_user_record(&user, &vec![]))
+            .collect::<Vec<_>>(),
+    ))
 }
 
 fn filter_user_record(user: &User, tokens: &Vec<UserToken>) -> FilteredUser {

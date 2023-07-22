@@ -32,15 +32,17 @@ pub fn Register(cx: Scope) -> impl IntoView {
             };
             tracing::info!("Try to register new account for {}", credentials.email);
             async move {
-                loading.update(|l| *l = Loading::Loading(Some("Creating account...")));
+                loading.set(Loading::Loading(Some("Creating account...")));
                 // verify if email is an actual email address, by finding the @ symbol followed by some dot somewhere after the @
                 if !email.contains('@') {
                     set_register_error.update(|e| *e = Some("Invalid email address".to_string()));
+                    loading.set(Loading::Ready);
                     return;
                 }
 
                 if password != repeat_password {
                     set_register_error.update(|e| *e = Some("Passwords do not match".to_string()));
+                    loading.set(Loading::Ready);
                     return;
                 }
 
@@ -51,16 +53,13 @@ pub fn Register(cx: Scope) -> impl IntoView {
                     Ok(res) => {
                         set_register_response.update(|v| *v = Some(res));
                         set_register_error.update(|e| *e = None);
+                        loading.set(Loading::Ready);
+                        app_state.toast(cx, "Account created", Some(ToastStyle::Success));
                     }
                     Err(err) => {
-                        let msg = match err {
-                            api::Error::Fetch(js_err) => {
-                                format!("{js_err:?}")
-                            }
-                            api::Error::Api(err) => err.message,
-                        };
-                        tracing::warn!("Unable to register new account for {}: {msg}", credentials.email);
-                        set_register_error.update(|e| *e = Some(msg));
+                        tracing::warn!("Unable to register new account for {}: {err}", credentials.email);
+                        loading.set(Loading::Ready);
+                        set_register_error.update(|e| *e = Some(err.to_string()));
                     }
                 }
             }
@@ -82,8 +81,7 @@ pub fn Register(cx: Scope) -> impl IntoView {
                 }
             }
         >
-            <p>"You have successfully registered. Please ask the administrator to activate your account, as we can't send emails yet ;)"</p>
-            <p>"Once done, you can "<A href=super::Page::Login.path() class="hover:underline">"Login"</A>" with your new account."</p>
+            <Redirect path="/" />
         </Show>
     }
 }

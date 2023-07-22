@@ -20,6 +20,28 @@ impl UserRepository {
 }
 
 impl UserRepository {
+    pub async fn all(&self) -> RepositoryResult<Vec<User>> {
+        let users = sqlx::query_as!(
+            crate::model::User,
+            r#"
+            SELECT
+                id AS "id: Uuid",
+                name,
+                email,
+                verified,
+                password,
+                roles AS "roles: Roles",
+                created_at,
+                updated_at
+            FROM users
+            "#
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(users)
+    }
+
     pub async fn get_by_id(&self, id: uuid::Uuid) -> RepositoryResult<Option<User>> {
         let user = sqlx::query_as!(
             crate::model::User,
@@ -143,6 +165,10 @@ impl UserRepository {
             let hashed_password = hashed_password.to_string();
 
             query.push(", password = ").push_bind(hashed_password);
+        }
+
+        if let Some(verified) = &body.verified {
+            query.push(", verified = ").push_bind(verified);
         }
 
         query.push(" WHERE id = ").push_bind(id);

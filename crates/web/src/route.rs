@@ -10,6 +10,7 @@ pub fn create_router(app_state: AppState) -> Router {
         .layer(DefaultBodyLimit::max(1024 * 1024 * 1024)) // 1GB
         .route("/api/v1/arma/mission", get(get_missions))
         // Protected routes
+        .route("/api/v1/users", get(get_users_without_tokens))
         .route("/api/v1/users/me", get(get_me_handler))
         .route("/api/v1/users/me", patch(update_user_handler))
         .route("/api/v1/auth/logout", get(logout_handler))
