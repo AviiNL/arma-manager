@@ -124,14 +124,12 @@ where
                 id=id
             >
                 {children(cx)}
-                {move || if is_active.get() {
+                {move || is_active.get().then(move || {
                     view! {
                         cx,
                         <span class="absolute inset-y-0 left-0 w-1 rounded-tr-md rounded-br-md bg-primary" aria-hidden="true"></span>
-                    }.into_view(cx)
-                } else {
-                    view! {cx , <></> }.into_view(cx)
-                }}
+                    }
+                })}
             </a>
         }
     }
