@@ -33,8 +33,8 @@ impl AppUpdate {
         }
     }
 
-    pub fn beta(mut self, beta: String, password: Option<String>) -> Self {
-        self.beta = Some(beta);
+    pub fn beta(mut self, beta: impl Into<String>, password: Option<String>) -> Self {
+        self.beta = Some(beta.into());
         self.beta_password = password;
         self
     }

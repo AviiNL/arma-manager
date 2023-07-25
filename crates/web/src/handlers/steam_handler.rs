@@ -18,7 +18,11 @@ pub async fn update_arma(Extension(status): Extension<Arc<StatusService>>) -> Ap
 
     status.set_steam(State::Starting).await;
 
-    let steam = steam::Steam::new_from_env().app_update(AppUpdate::new(ARMA_SERVER_APP_ID).validate(true));
+    let steam = steam::Steam::new_from_env().app_update(
+        AppUpdate::new(ARMA_SERVER_APP_ID)
+            .validate(true)
+            .beta("creatordlc", None),
+    );
 
     let c = steam
         .run()

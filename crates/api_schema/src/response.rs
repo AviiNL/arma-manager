@@ -97,3 +97,12 @@ pub enum PresetUpdate {
 pub struct MissionResponse {
     pub missions: Vec<String>,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "ssr", derive(sqlx::FromRow))]
+pub struct Dlc {
+    pub id: i64,
+    pub name: String,
+    pub key: String,
+    pub app_id: i64,
+}

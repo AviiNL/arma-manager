@@ -107,7 +107,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
     });
 
     view! { cx,
-        <div class="card w-full p-6 bg-base-100 shadow-xl mt-2 mb-4">
+        <div class="card w-full md:w-4/6 p-6 bg-base-100 shadow-xl mr-1 mt-2 mb-4">
             <div class="flex justify-between text-sm font-semibold">
                 <div class="dropdown">
                     <label class="btn gap-1 normal-case btn-ghost" tabindex="0">
@@ -230,6 +230,23 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                                 </tr>
                             }.into_view(cx)
                         }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card w-full md:w-2/6 p-6 bg-base-100 shadow-xl ml-1 mt-2 mb-4">
+            <div class="text-xl font-semibold ">"DLC"</div>
+            <div class="divider mt-2"></div>
+            <div class="max-w-full h-full overflow-y-auto">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th>"DLC"</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        // <For each={move || tokens.get()} key={|token| token.token.clone()} view={move |cx, token| view!{ cx, <Token token=token /> }} />
                     </tbody>
                 </table>
             </div>

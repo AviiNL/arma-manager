@@ -9,7 +9,7 @@ use repository::{PresetRepository, UserRepository, UserTokenRepository};
 use route::create_router;
 pub use service::*;
 use sqlx::sqlite::SqlitePoolOptions;
-use tower_http::{compression::CompressionLayer, cors::CorsLayer};
+use tower_http::cors::CorsLayer;
 
 pub async fn start() {
     let config = Config::init();
@@ -51,8 +51,7 @@ pub async fn start() {
         .layer(Extension(status))
         .layer(Extension(preset))
         .layer(Extension(log))
-        .layer(cors)
-        .layer(CompressionLayer::new());
+        .layer(cors);
 
     let dashboard = dashboard::get_router();
 
