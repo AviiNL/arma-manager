@@ -60,6 +60,18 @@ pub async fn update_preset_item(
     Ok(ApiResponse::new(item))
 }
 
+pub async fn update_preset_dlc(
+    Extension(preset_service): Extension<Arc<PresetService>>,
+    Json(input): Json<UpdatePresetDlcSchema>,
+) -> ApiResult<impl IntoResponse> {
+    let item = preset_service
+        .update_dlc(input)
+        .await
+        .map_err(|e| ErrorResponse::new(format!("Database Error: {}", e)))?;
+
+    Ok(ApiResponse::new(item))
+}
+
 pub async fn blacklist_item(
     Extension(preset_service): Extension<Arc<PresetService>>,
     Json(input): Json<BlacklistItemSchema>,

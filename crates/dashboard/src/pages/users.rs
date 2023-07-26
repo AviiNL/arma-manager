@@ -60,8 +60,6 @@ pub fn Users(cx: Scope) -> impl IntoView {
                             v
                         }}
 
-
-
                     </tbody>
                 </table>
             </div>
@@ -69,7 +67,7 @@ pub fn Users(cx: Scope) -> impl IntoView {
         { move || { if let Some(user) = selected_user.get() {
             view! { cx, <User user_signal=selected_user /> }.into_view(cx)
         } else {
-            view! { cx, <></> }.into_view(cx)
+            ().into_view(cx)
         }}}
     }
 }
@@ -199,7 +197,7 @@ pub fn User(cx: Scope, user_signal: RwSignal<Option<FilteredUser>>) -> impl Into
                     <div class="mt-16">
 
                         <div class="indicator float-right">
-                            <Show when={move || changed.get()} fallback={move |_| view! {cx, <></> }}>
+                            <Show when={move || changed.get()} fallback={move |_| ()}>
                                 <span class="indicator-item indicator-start badge badge-secondary"></span>
                             </Show>
                             <button class="btn btn-primary" on:click={ move |_| update.dispatch(())}>"Update"</button>

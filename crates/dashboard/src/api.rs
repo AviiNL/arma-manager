@@ -223,6 +223,11 @@ impl AuthorizedApi {
         self.send(Request::patch(&url).json(preset)?).await
     }
 
+    pub async fn set_preset_dlc_enabled(&self, preset: &UpdatePresetDlcSchema) -> Result<DlcItem> {
+        let url = format!("{}/presets/dlc", self.url);
+        self.send(Request::patch(&url).json(preset)?).await
+    }
+
     pub async fn blacklist_item(&self, item: &BlacklistItemSchema) -> Result<SimpleResponse> {
         let url = format!("{}/presets/item/blacklist", self.url);
         self.send(Request::post(&url).json(item)?).await

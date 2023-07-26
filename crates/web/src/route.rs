@@ -32,6 +32,7 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/api/v1/presets", patch(select_preset))
         .route("/api/v1/presets", delete(delete_preset))
         .route("/api/v1/presets/item", patch(update_preset_item))
+        .route("/api/v1/presets/dlc", patch(update_preset_dlc))
         .route("/api/v1/presets/item/blacklist", post(blacklist_item))
         .route("/api/v1/presets/item/blacklist", delete(unblacklist_item))
         // SSE routes

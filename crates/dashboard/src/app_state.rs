@@ -267,6 +267,7 @@ async fn setup_presets(
             "create".to_string(),
             "select".to_string(),
             "update".to_string(),
+            "update_dlc".to_string(),
             "blacklist".to_string(),
             "unblacklist".to_string(),
             "delete".to_string(),
@@ -318,6 +319,25 @@ async fn setup_presets(
                 presets.update(|list| {
                     list.iter_mut().for_each(|p| {
                         p.items.iter_mut().for_each(|i| {
+                            if i.id == item.id {
+                                *i = item.clone();
+                            }
+                        });
+                    });
+                });
+                loading.set(Loading::Ready);
+            }
+            "update_dlc" => {
+                let PresetUpdate::Dlc(item) = data else {
+                    tracing::error!("Incompatible data for event: {}", event);
+                    return;
+                };
+
+                // ew?
+                loading.set(Loading::Loading(Some("Updating Presets...")));
+                presets.update(|list| {
+                    list.iter_mut().for_each(|p| {
+                        p.dlcs.iter_mut().for_each(|i| {
                             if i.id == item.id {
                                 *i = item.clone();
                             }

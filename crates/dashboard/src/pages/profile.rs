@@ -134,7 +134,7 @@ pub fn Profile(cx: Scope) -> impl IntoView {
                 <div class="mt-16">
 
                     <div class="indicator float-right">
-                        <Show when={move || changed.get()} fallback={move |_| view! {cx, <></> }}>
+                        <Show when={move || changed.get()} fallback={move |_| ()}>
                             <span class="indicator-item indicator-start badge badge-secondary"></span>
                         </Show>
                         <button class="btn btn-primary" on:click={ move |_| update.dispatch(())}>"Update"</button>

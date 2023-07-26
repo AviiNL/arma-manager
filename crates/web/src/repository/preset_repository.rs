@@ -1,6 +1,6 @@
 use api_schema::{
     request::*,
-    response::{Preset, PresetItem},
+    response::{DlcItem, Preset, PresetItem},
 };
 use sqlx::{QueryBuilder, SqlitePool};
 
@@ -33,11 +33,13 @@ impl PresetRepository {
         let mut result = vec![];
         for preset in presets {
             let items = self.get_items(preset.id).await?;
+            let dlcs = self.get_dlcs(preset.id).await?;
             result.push(Preset {
                 id: preset.id,
                 name: preset.name,
                 selected: preset.selected.is_some(),
                 items,
+                dlcs,
             });
         }
 
@@ -59,11 +61,13 @@ impl PresetRepository {
 
         if let Some(preset) = preset {
             let items = self.get_items(preset.id).await?;
+            let dlcs = self.get_dlcs(preset.id).await?;
             Ok(Some(Preset {
                 id: preset.id,
                 name: preset.name,
                 selected: true,
                 items,
+                dlcs,
             }))
         } else {
             Ok(None)
@@ -99,6 +103,23 @@ impl PresetRepository {
 
         Ok(items)
     }
+
+    pub async fn get_dlcs(&self, preset_id: i64) -> RepositoryResult<Vec<DlcItem>> {
+        let dlcs = sqlx::query_as!(
+            DlcItem,
+            r#"
+            SELECT id, name, key, app_id, enabled, position
+            FROM preset_dlc
+            WHERE preset_id = ?
+            ORDER BY position ASC
+            "#,
+            preset_id
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(dlcs)
+    }
 }
 
 impl PresetRepository {
@@ -121,6 +142,16 @@ impl PresetRepository {
         sqlx::query!(
             r#"
             DELETE FROM preset_items WHERE preset_id = ?
+            "#,
+            preset.id
+        )
+        .execute(&self.pool)
+        .await?;
+
+        // clear dlcs if they exist
+        sqlx::query!(
+            r#"
+            DELETE FROM preset_dlc WHERE preset_id = ?
             "#,
             preset.id
         )
@@ -152,11 +183,34 @@ impl PresetRepository {
             items.push(item);
         }
 
+        let mut dlcs = vec![];
+        // add dlcs
+        for dlc in &input.dlcs {
+            let dlc: DlcItem = sqlx::query_as(
+                r#"
+                INSERT INTO preset_dlc (preset_id, name, key, app_id, enabled, position)
+                VALUES (?, ?, ?, ?, ?, ?)
+                RETURNING id, name, key, app_id, enabled, position
+                "#,
+            )
+            .bind(preset.id)
+            .bind(dlc.name.clone())
+            .bind(dlc.key.clone())
+            .bind(dlc.app_id)
+            .bind(dlc.enabled)
+            .bind(dlc.position)
+            .fetch_one(&self.pool)
+            .await?;
+
+            dlcs.push(dlc);
+        }
+
         let preset = Preset {
             id: preset.id,
             name: preset.name,
             selected: preset.selected.is_some(),
-            items: items,
+            items,
+            dlcs,
         };
 
         Ok(preset)
@@ -185,12 +239,14 @@ impl PresetRepository {
         .await?;
 
         let items = vec![]; // self.get_items(preset.id).await?;
+        let dlcs = vec![]; // self.get_dlcs(preset.id).await?;
 
         Ok(Preset {
             id: preset.id,
             name: preset.name,
             selected: preset.selected.is_some(),
             items,
+            dlcs,
         })
     }
 
@@ -224,6 +280,31 @@ impl PresetRepository {
         Ok(preset_item)
     }
 
+    pub async fn update_dlc(&self, schema: UpdatePresetDlcSchema) -> RepositoryResult<DlcItem> {
+        let mut query = QueryBuilder::new(
+            r#"
+            UPDATE preset_dlc
+            SET "#,
+        );
+
+        if let Some(enabled) = schema.enabled {
+            query.push(" enabled = ").push_bind(enabled);
+        }
+
+        if let Some(position) = schema.position {
+            query.push(", position = ").push_bind(position);
+        }
+
+        query.push(" WHERE id = ").push_bind(schema.id);
+
+        // returning
+        query.push("RETURNING id, name, key, app_id, enabled, position");
+
+        let dlc = query.build_query_as::<DlcItem>().fetch_one(&self.pool).await?;
+
+        Ok(dlc)
+    }
+
     pub async fn delete_preset(&self, id: i64) -> RepositoryResult<()> {
         // abort if the preset is the currently selected one
         let selected = sqlx::query!(
@@ -240,6 +321,11 @@ impl PresetRepository {
         }
 
         sqlx::query("DELETE FROM preset_items WHERE preset_id = ?")
+            .bind(id)
+            .execute(&self.pool)
+            .await?;
+
+        sqlx::query("DELETE FROM preset_dlc WHERE preset_id = ?")
             .bind(id)
             .execute(&self.pool)
             .await?;
