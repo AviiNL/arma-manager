@@ -36,6 +36,7 @@ pub async fn start_arma(
     let params = arma::get_default_parameters();
 
     arma::install_keys(&preset).map_err(|e| ErrorResponse::new(format!("{}", e)))?;
+    arma::install_dlc_keys(&preset).map_err(|e| ErrorResponse::new(format!("{}", e)))?;
 
     let c = match arma::Arma3::new()
         .mods(mod_str)

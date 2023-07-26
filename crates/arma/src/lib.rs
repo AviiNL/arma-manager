@@ -24,13 +24,17 @@ pub fn get_mod_path(published_file_id: i64) -> PathBuf {
 
 pub fn get_mod_str(preset: &Preset) -> Result<String, Box<dyn std::error::Error>> {
     let mut items = preset.items.clone();
+    let mut dlcs = preset.dlcs.clone();
 
     items.sort_by(|a, b| a.position.cmp(&b.position));
+    dlcs.sort_by(|a, b| a.position.cmp(&b.position));
 
     let items = items
         .iter()
         .filter(|item| item.enabled && !item.blacklisted)
         .collect::<Vec<_>>();
+
+    let dlcs = dlcs.iter().filter(|dlc| dlc.enabled).collect::<Vec<_>>();
 
     let mut missing = Vec::new();
 
@@ -49,7 +53,12 @@ pub fn get_mod_str(preset: &Preset) -> Result<String, Box<dyn std::error::Error>
         .map(|item| get_mod_path(item.published_file_id).to_string_lossy().to_string())
         .collect::<Vec<_>>();
 
-    Ok(format!(r#""-serverMod={}""#, items.join(";")))
+    // PREPEND the dlcs to items
+    let items = dlcs.iter().map(|dlc| dlc.key.clone()).chain(items).collect::<Vec<_>>();
+
+    Ok(format!(r#""-mod={}""#, items.join(";")))
+    // Ok(format!(r#""-mod={}" "-serverMod={}""#, dlcs.join(";"), items.join(";")))
+    // TODO: Should this be -mod or -serverMod ?
 }
 
 pub fn install_keys(preset: &Preset) -> Result<(), std::io::Error> {
@@ -60,9 +69,7 @@ pub fn install_keys(preset: &Preset) -> Result<(), std::io::Error> {
         ));
     };
 
-    let mut items = preset.items.clone();
-    items.sort_by(|a, b| a.position.cmp(&b.position));
-    let items = items.iter().filter(|item| item.enabled).collect::<Vec<_>>();
+    let items = preset.items.iter().filter(|item| item.enabled).collect::<Vec<_>>();
 
     let arma_keys_path = arma_path.join("keys");
 
@@ -104,8 +111,48 @@ pub fn install_keys(preset: &Preset) -> Result<(), std::io::Error> {
     Ok(())
 }
 
+pub fn install_dlc_keys(preset: &Preset) -> Result<(), std::io::Error> {
+    let Some(arma_path) = paths::get_arma_path() else {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Arma 3 Server is not installed",
+        ));
+    };
+
+    let arma_keys_path = arma_path.join("keys");
+
+    if !arma_keys_path.exists() {
+        std::fs::create_dir_all(&arma_keys_path)?;
+    }
+
+    let items = preset.dlcs.iter().filter(|item| item.enabled).collect::<Vec<_>>();
+
+    for item in &items {
+        // key path is arma_path/{item.key}/keys, copy to arma_path/keys
+        let key_path = arma_path.join(item.key.clone()).join("keys");
+
+        if key_path.exists() {
+            for entry in std::fs::read_dir(&key_path)? {
+                let entry = entry?;
+
+                let file_name = entry.file_name();
+
+                let arma_key_path = arma_keys_path.join(file_name);
+
+                if !arma_key_path.exists() {
+                    std::fs::copy(entry.path(), arma_key_path)?;
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
 pub fn get_default_parameters() -> Vec<String> {
     let mut params = Vec::new();
+
+    let cpus = num_cpus::get();
 
     // all of this needs to be moved to a config page
     params.push("-noSplash".to_string());
@@ -116,6 +163,7 @@ pub fn get_default_parameters() -> Vec<String> {
     params.push("-enableHT".to_string());
     params.push("-hugePages".to_string());
     params.push("-limitFPS=80".to_string());
+    params.push(format!("-cpuCount={}", cpus));
 
     params
 }

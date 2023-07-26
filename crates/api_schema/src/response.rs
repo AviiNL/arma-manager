@@ -67,6 +67,7 @@ pub struct Preset {
     pub name: String,
     pub selected: bool,
     pub items: Vec<PresetItem>,
+    pub dlcs: Vec<DlcItem>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -86,6 +87,7 @@ pub struct PresetItem {
 pub enum PresetUpdate {
     Created(Preset),
     Updated(PresetItem),
+    Dlc(DlcItem),
     Removed(i64),
     Selected(i64),
     Blacklisted(i64),
@@ -100,9 +102,11 @@ pub struct MissionResponse {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "ssr", derive(sqlx::FromRow))]
-pub struct Dlc {
+pub struct DlcItem {
     pub id: i64,
     pub name: String,
     pub key: String,
     pub app_id: i64,
+    pub enabled: bool,
+    pub position: i64,
 }

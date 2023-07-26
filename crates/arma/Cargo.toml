@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 notify = "6.0.1"
 directories = "5.0.1"
+num_cpus = "1.16.0"
 
 api_schema.workspace = true
 

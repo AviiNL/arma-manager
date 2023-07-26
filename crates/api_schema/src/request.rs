@@ -31,6 +31,7 @@ pub struct RevokeTokenSchema {
 pub struct CreatePresetSchema {
     pub name: String,
     pub items: Vec<PresetItemSchema>,
+    pub dlcs: Vec<PresetDlcSchema>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -46,9 +47,25 @@ pub struct UpdatePresetItemSchema {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct UpdatePresetDlcSchema {
+    pub id: i64,
+    pub enabled: Option<bool>,
+    pub position: Option<i64>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct PresetItemSchema {
     pub name: String,
     pub published_file_id: i64,
+    pub enabled: bool,
+    pub position: i64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct PresetDlcSchema {
+    pub name: String,
+    pub key: String,
+    pub app_id: i64,
     pub enabled: bool,
     pub position: i64,
 }

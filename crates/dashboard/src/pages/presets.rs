@@ -4,7 +4,7 @@ use leptos::*;
 
 use crate::{
     app_state::{AppState, Loading},
-    components::PresetItem,
+    components::{PresetDlc, PresetItem},
 };
 
 #[component]
@@ -226,7 +226,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                         } else {
                             view! { cx,
                                 <tr>
-                                    <td class="text-center" colspan="3">No Preset Selected</td>
+                                    <td class="text-center" colspan="3">"No Preset Selected"</td>
                                 </tr>
                             }.into_view(cx)
                         }}
@@ -246,7 +246,15 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                         </tr>
                     </thead>
                     <tbody>
-                        // <For each={move || tokens.get()} key={|token| token.token.clone()} view={move |cx, token| view!{ cx, <Token token=token /> }} />
+                    {move || if let Some(filtered_preset) = filtered_preset.get() {
+                        view! { cx, <For each={move || filtered_preset.dlcs.clone()} key={|item| item.id} view={move |cx, item| view! { cx, <PresetDlc item=item.clone() /> }.into_view(cx)} /> }.into_view(cx)
+                    } else {
+                        view! { cx,
+                            <tr>
+                                <td class="text-center" colspan="3">"No Preset Selected"</td>
+                            </tr>
+                        }.into_view(cx)
+                    }}
                     </tbody>
                 </table>
             </div>

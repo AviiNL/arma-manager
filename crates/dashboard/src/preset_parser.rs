@@ -1,4 +1,4 @@
-use api_schema::request::{CreatePresetSchema, PresetItemSchema};
+use api_schema::request::{CreatePresetSchema, PresetDlcSchema, PresetItemSchema};
 
 pub fn is_preset(document: &str) -> bool {
     let document = scraper::Html::parse_document(document);
@@ -37,7 +37,78 @@ pub fn parse(document: &str) -> Result<CreatePresetSchema, Box<dyn std::error::E
         });
     }
 
-    Ok(CreatePresetSchema { name, items })
+    let dlcs = document
+        .select(&scraper::Selector::parse("div.dlc-list").unwrap())
+        .next()
+        .ok_or("Invalid preset file")?;
+
+    // // list of <tr data-type="DlcContainer">
+    let dlcs = dlcs
+        .select(&scraper::Selector::parse("tr[data-type=\"DlcContainer\"]").unwrap())
+        .collect::<Vec<_>>();
+
+    let mut dlc_items = Vec::default();
+
+    // Push in all the DLCs, update "enabled" later
+    dlc_items.push(PresetDlcSchema {
+        name: String::from("Spearhead 1944"),
+        key: String::from("spe"),
+        app_id: 1175380,
+        enabled: false,
+        position: 1,
+    });
+    dlc_items.push(PresetDlcSchema {
+        name: String::from("Western Sahara"),
+        key: String::from("ws"),
+        app_id: 1681170,
+        enabled: false,
+        position: 2,
+    });
+    dlc_items.push(PresetDlcSchema {
+        name: String::from("S.O.G. Prairie Fire"),
+        key: String::from("vn"),
+        app_id: 1227700,
+        enabled: false,
+        position: 3,
+    });
+    dlc_items.push(PresetDlcSchema {
+        name: String::from("CSLA Iron Curtain"),
+        key: String::from("csla"),
+        app_id: 1294440,
+        enabled: false,
+        position: 4,
+    });
+    dlc_items.push(PresetDlcSchema {
+        name: String::from("Global Mobilization"),
+        key: String::from("gm"),
+        app_id: 1042220,
+        enabled: false,
+        position: 5,
+    });
+    dlc_items.push(PresetDlcSchema {
+        name: String::from("Contact"),
+        key: String::from("enoch"),
+        app_id: 1021790,
+        enabled: false,
+        position: 6,
+    });
+
+    for dlc in dlcs {
+        let app_id = get_mod_id(&dlc);
+
+        // find the DLC in the list from app_id and set enabled to true
+        for dlc_item in &mut dlc_items {
+            if dlc_item.app_id == app_id {
+                dlc_item.enabled = true;
+            }
+        }
+    }
+
+    Ok(CreatePresetSchema {
+        name,
+        items,
+        dlcs: dlc_items,
+    })
 }
 
 fn get_mod_id(element: &scraper::ElementRef) -> i64 {
@@ -86,11 +157,17 @@ fn validate(document: &scraper::Html) -> bool {
 fn validate_inner(document: &scraper::Html, name: &str, value: Option<&str>) -> bool {
     let Some(value) = value else {
         // only check for existence
-        return document.select(&scraper::Selector::parse(&format!("meta[name=\"{}\"]", name)).unwrap()).next().is_some();
+        return document
+            .select(&scraper::Selector::parse(&format!("meta[name=\"{}\"]", name)).unwrap())
+            .next()
+            .is_some();
     };
 
     // get the meta tag where name == arma:Type
-    let Some(meta_type) = document.select(&scraper::Selector::parse(&format!("meta[name=\"{}\"]", name)).unwrap()).next() else {
+    let Some(meta_type) = document
+        .select(&scraper::Selector::parse(&format!("meta[name=\"{}\"]", name)).unwrap())
+        .next()
+    else {
         return false;
     };
 

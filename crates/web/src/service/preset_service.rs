@@ -58,6 +58,16 @@ impl PresetService {
         Ok(item)
     }
 
+    pub async fn update_dlc(&self, schema: UpdatePresetDlcSchema) -> Result<DlcItem, Box<dyn std::error::Error>> {
+        let dlc = self.repository.update_dlc(schema).await?;
+
+        let _ = self.tx.send(Ok(Event::default()
+            .event("update_dlc")
+            .data(serde_json::to_string(&PresetUpdate::Dlc(dlc.clone()))?)));
+
+        Ok(dlc)
+    }
+
     // blacklist_item
     pub async fn blacklist_item(&self, schema: BlacklistItemSchema) -> Result<(), Box<dyn std::error::Error>> {
         self.repository.blacklist_item(schema.published_file_id).await?;

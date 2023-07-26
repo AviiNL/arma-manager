@@ -70,6 +70,7 @@ async fn validate_and_upload(cx: Scope, api: &AuthorizedApi, file: &File) -> Res
     if let Ok(data) = String::from_utf8(data.clone()) {
         if crate::preset_parser::is_preset(&data) {
             let data = crate::preset_parser::parse(&data)?;
+
             api.post_preset(&data).await?;
 
             use_navigate(cx)("/console/presets", Default::default()).expect("Presets route");
