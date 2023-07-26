@@ -37,6 +37,7 @@ pub async fn get_missions() -> ApiResult<impl IntoResponse> {
             let filename = path.file_name().unwrap().to_string_lossy().to_string();
 
             if filename.ends_with(".pbo") {
+                let filename = filename.strip_suffix(".pbo").unwrap().to_string();
                 missions.push(filename);
             }
         }
