@@ -5,11 +5,6 @@ use leptos_use::*;
 
 use crate::{api::AuthorizedApi, app::LogData, app_state::AppState, components::Progress};
 
-pub fn is_mounted(cx: Scope) -> impl Fn() -> bool {
-    let (mounted, _) = create_signal(cx, ());
-    move || -> bool { mounted.try_get_untracked().is_some() }
-}
-
 #[component]
 pub fn EditView<F>(cx: Scope, channel: F) -> impl IntoView
 where
