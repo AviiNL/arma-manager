@@ -31,7 +31,6 @@ where
         element.set_value(&new_content);
     });
 
-    // let achannel = channel.clone();
     let save = create_action(cx, move |channel: &String| {
         let channel = channel.clone();
         let content = element.get().expect("textarea to exist").value();
