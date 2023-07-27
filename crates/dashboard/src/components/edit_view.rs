@@ -19,15 +19,16 @@ where
 
     let c = channel.clone();
     create_effect(cx, move |_| {
+        let Some(element) = element.get() else {
+            return;
+        };
         let channel = c();
         let arma_config = arma_config.get();
         let new_content = match arma_config.get(&*channel) {
             Some(c) => c.join("\n"),
             None => String::default(),
         };
-        if let Some(element) = element.get() {
-            element.set_value(&new_content);
-        }
+        element.set_value(&new_content);
     });
 
     // let achannel = channel.clone();
