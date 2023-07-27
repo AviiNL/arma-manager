@@ -16,7 +16,7 @@ pub fn LogView(
     let log_data = app_state.log.clone();
 
     let log_content = create_rw_signal(cx, String::new());
-    let is_loaded = create_rw_signal(cx, false);
+
     let element = create_node_ref::<Textarea>(cx);
 
     let UseScrollReturn { set_y, .. } = use_scroll_with_options(
@@ -56,13 +56,6 @@ pub fn LogView(
         };
 
         log_content.set(lines.join("\n"));
-
-        if let Some(element) = element.get_untracked() {
-            if !is_loaded.get_untracked() {
-                element.set_scroll_top(element.scroll_height());
-                is_loaded.set(true);
-            }
-        }
 
         if let Some(progress) = progress {
             if let Some(line) = lines.last() {
