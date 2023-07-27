@@ -190,10 +190,6 @@ pub fn prepare_profile() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-// we also still need something for key management
-// copying/moving/linking keys from mods to the arma keys folder
-// currently we're not verifying keys, so it's fine for now.
-
 pub struct Arma3 {
     mods: Option<String>,
     parameters: Option<Vec<String>>,
