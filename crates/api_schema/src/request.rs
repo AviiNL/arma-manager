@@ -44,6 +44,7 @@ pub struct UpdatePresetItemSchema {
     pub id: i64,
     pub enabled: Option<bool>,
     pub position: Option<i64>,
+    pub server_mod: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

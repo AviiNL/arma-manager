@@ -7,6 +7,7 @@ use crate::{
     app::API_TOKEN_STORAGE_KEY,
     app_state::AppState,
     components::{ServerButtons, ThemeSelect},
+    pages::Page,
 };
 
 trait Gravatar {
@@ -41,7 +42,7 @@ pub fn Header(cx: Scope) -> impl IntoView {
             Ok(_) => {
                 app_state.cleanup();
                 LocalStorage::delete(API_TOKEN_STORAGE_KEY);
-                use_navigate(cx)(crate::pages::Page::Login.path(), Default::default()).expect("Login route");
+                use_navigate(cx)(Page::Login.path(), Default::default()).expect("Login route");
             }
             Err(e) => {
                 tracing::error!("Failed to logout: {:?}", e);
@@ -77,7 +78,7 @@ pub fn Header(cx: Scope) -> impl IntoView {
                         </label>
                         <ul tabindex="0" class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
                             <li class="justify-between">
-                                <A href="/profile" exact=true>
+                                <A href={Page::Profile.path()} exact=true>
                                     "Profile Settings"
                                 </A>
                             </li>

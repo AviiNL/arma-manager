@@ -29,16 +29,21 @@ pub fn get_mod_str(preset: &Preset) -> Result<String, Box<dyn std::error::Error>
     items.sort_by(|a, b| a.position.cmp(&b.position));
     dlcs.sort_by(|a, b| a.position.cmp(&b.position));
 
-    let items = items
+    let mods = items
         .iter()
-        .filter(|item| item.enabled && !item.blacklisted)
+        .filter(|item| item.enabled && !item.blacklisted && !item.server_mod)
+        .collect::<Vec<_>>();
+
+    let server_mods = items
+        .iter()
+        .filter(|item| item.enabled && !item.blacklisted && item.server_mod)
         .collect::<Vec<_>>();
 
     let dlcs = dlcs.iter().filter(|dlc| dlc.enabled).collect::<Vec<_>>();
 
     let mut missing = Vec::new();
 
-    for item in &items {
+    for item in mods.iter().clone().chain(&server_mods) {
         if !mod_exists(item.published_file_id) {
             missing.push(item.name.clone());
         }
@@ -48,17 +53,32 @@ pub fn get_mod_str(preset: &Preset) -> Result<String, Box<dyn std::error::Error>
         return Err(format!("Missing mods: {}", missing.join(", ")).into());
     }
 
-    let items = items
+    let mods = mods
+        .iter()
+        .map(|item| get_mod_path(item.published_file_id).to_string_lossy().to_string())
+        .collect::<Vec<_>>();
+
+    let server_mods = server_mods
         .iter()
         .map(|item| get_mod_path(item.published_file_id).to_string_lossy().to_string())
         .collect::<Vec<_>>();
 
     // PREPEND the dlcs to items
-    let items = dlcs.iter().map(|dlc| dlc.key.clone()).chain(items).collect::<Vec<_>>();
+    let mods = dlcs.iter().map(|dlc| dlc.key.clone()).chain(mods).collect::<Vec<_>>();
 
-    Ok(format!(r#""-mod={}""#, items.join(";")))
-    // Ok(format!(r#""-mod={}" "-serverMod={}""#, dlcs.join(";"), items.join(";")))
-    // TODO: Should this be -mod or -serverMod ?
+    let mut mods_str = String::new();
+
+    // if there are mods, add the -mod flag
+    if !mods.is_empty() {
+        mods_str.push_str(&format!(r#" "-mod={}""#, mods.join(";")));
+    }
+
+    // if there are servermods, append the -serverMod flag
+    if !server_mods.is_empty() {
+        mods_str.push_str(&format!(r#" "-serverMod={}""#, server_mods.join(";")));
+    }
+
+    Ok(mods_str)
 }
 
 pub fn install_keys(preset: &Preset) -> Result<(), std::io::Error> {

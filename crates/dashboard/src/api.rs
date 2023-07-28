@@ -218,7 +218,7 @@ impl AuthorizedApi {
         self.send(Request::patch(&url).json(preset)?).await
     }
 
-    pub async fn set_preset_item_enabled(&self, preset: &UpdatePresetItemSchema) -> Result<PresetItem> {
+    pub async fn update_preset_item(&self, preset: &UpdatePresetItemSchema) -> Result<PresetItem> {
         let url = format!("{}/presets/item", self.url);
         self.send(Request::patch(&url).json(preset)?).await
     }
