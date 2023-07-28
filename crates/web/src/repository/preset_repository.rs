@@ -85,7 +85,7 @@ impl PresetRepository {
     pub async fn get_items(&self, preset_id: i64) -> RepositoryResult<Vec<PresetItem>> {
         let mut items: Vec<PresetItem> = sqlx::query_as(
             r#"
-            SELECT i.id, i.name, i.published_file_id, i.position, i.enabled,
+            SELECT i.id, i.name, i.published_file_id, i.position, i.enabled, i.server_mod,
                 CASE WHEN b.published_file_id IS NULL THEN 0 ELSE 1 END AS blacklisted
             FROM preset_items i
             LEFT JOIN blacklist b ON i.published_file_id = b.published_file_id
@@ -165,7 +165,7 @@ impl PresetRepository {
                 r#"
                 INSERT INTO preset_items (preset_id, name, published_file_id, position, enabled)
                 VALUES (?, ?, ?, ?, ?)
-                RETURNING id, name, published_file_id, position, enabled,
+                RETURNING id, name, published_file_id, position, enabled, server_mod,
                     (SELECT EXISTS(SELECT 1 FROM blacklist b
                     WHERE b.published_file_id = preset_items.published_file_id)) AS blacklisted
                 "#,
@@ -257,19 +257,36 @@ impl PresetRepository {
             SET "#,
         );
 
+        let mut first = true;
+
         if let Some(enabled) = schema.enabled {
+            if !first {
+                query.push(",");
+            }
+            first = false;
             query.push(" enabled = ").push_bind(enabled);
         }
 
         if let Some(position) = schema.position {
-            query.push(", position = ").push_bind(position);
+            if !first {
+                query.push(",");
+            }
+            first = false;
+            query.push(" position = ").push_bind(position);
+        }
+
+        if let Some(server_mod) = schema.server_mod {
+            if !first {
+                query.push(",");
+            }
+            query.push(" server_mod = ").push_bind(server_mod);
         }
 
         query.push(" WHERE id = ").push_bind(schema.id);
 
         // returning
         query.push(
-            "RETURNING id, name, published_file_id, position, enabled,
+            "RETURNING id, name, published_file_id, position, enabled, server_mod,
             (SELECT EXISTS(SELECT 1 FROM blacklist b
              WHERE b.published_file_id = preset_items.published_file_id)) AS blacklisted",
         );

@@ -18,10 +18,11 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
                 id,
                 enabled: Some(value),
                 position: None,
+                server_mod: None,
             };
 
             // send new value to backend
-            api.set_preset_item_enabled(&schema).await.unwrap();
+            api.update_preset_item(&schema).await.unwrap();
 
             enabled.set(value);
         }
@@ -42,6 +43,22 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
         }
     });
 
+    let toggle_server_mod = create_action(cx, move |()| {
+        let id = item.id.clone();
+        let value = !item.server_mod;
+        async move {
+            let api = app_state.api.get_untracked().expect("there to be an Api");
+            let schema = UpdatePresetItemSchema {
+                id,
+                enabled: None,
+                position: None,
+                server_mod: Some(value),
+            };
+
+            api.update_preset_item(&schema).await.unwrap();
+        }
+    });
+
     view! { cx,
         <tr class=("blacklist", move || item.blacklisted) class="">
             <td>
@@ -57,6 +74,15 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
                         } else {
                             view! { cx, <s>{item.name}</s> }.into_view(cx)
                         }}
+                    </div>
+                    <div class="h-full text-center flex-0 ml-5">
+                        <button class="btn btn-sm btn-ghost hover:glass" on:click=move |_| toggle_server_mod.dispatch(())>
+                        {if item.server_mod {
+                            view! { cx, <i class="fa-solid fa-server" title="Server Mod"></i> }
+                        } else {
+                            view! { cx, <i class="fa-solid fa-computer" title="Client Mod"></i> }
+                        }}
+                        </button>
                     </div>
                     <div class="h-full text-center flex-0 ml-5">
                         <button class="btn btn-sm btn-ghost hover:glass" on:click=move |_| toggle_blacklist.dispatch(())>

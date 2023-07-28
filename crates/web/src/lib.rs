@@ -20,6 +20,8 @@ pub async fn start() {
         .await
         .expect("Failed to connect to SQLite.");
 
+    sqlx::migrate!().run(&pool).await.unwrap();
+
     let user_repository = UserRepository::new(pool.clone());
     let user_token_repository = UserTokenRepository::new(pool.clone());
     let preset_repository = PresetRepository::new(pool.clone());

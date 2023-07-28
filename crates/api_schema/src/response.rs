@@ -79,6 +79,7 @@ pub struct PresetItem {
     pub position: i64,
     pub enabled: bool,
     pub blacklisted: bool,
+    pub server_mod: bool,
     #[cfg_attr(feature = "ssr", sqlx(skip))]
     pub exists: bool,
 }
