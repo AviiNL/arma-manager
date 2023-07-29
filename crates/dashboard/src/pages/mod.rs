@@ -1,6 +1,7 @@
 pub mod authenticated_base;
 pub mod blank;
 pub mod config;
+pub mod dashboard;
 pub mod log;
 pub mod login;
 pub mod missions;
@@ -12,6 +13,7 @@ pub mod users;
 pub use authenticated_base::*;
 pub use blank::*;
 pub use config::*;
+pub use dashboard::*;
 pub use log::*;
 pub use login::*;
 pub use missions::*;

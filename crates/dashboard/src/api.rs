@@ -2,6 +2,7 @@ use std::fmt::Display;
 use std::io::Read;
 use std::{rc::Rc, sync::Mutex};
 
+use api_schema::a2s::{Info, Player};
 use api_schema::{request::*, response::*, *};
 use futures::channel::oneshot;
 use gloo_net::http::{FormData, Request, Response};
@@ -278,6 +279,22 @@ impl AuthorizedApi {
         self.loading.set(Loading::Ready);
 
         response
+    }
+
+    pub async fn get_a2s_info(&self) -> Result<Info> {
+        self.loading.set(Loading::Loading(Some("Loading server info...")));
+        let url = format!("{}/a2s/info", self.url);
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
+    }
+
+    pub async fn get_a2s_players(&self) -> Result<Vec<Player>> {
+        self.loading.set(Loading::Loading(Some("Loading players...")));
+        let url = format!("{}/a2s/players", self.url);
+        let result = self.send(Request::get(&url)).await;
+        self.loading.set(Loading::Ready);
+        result
     }
 
     pub fn token(&self) -> &ApiToken {

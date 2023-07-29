@@ -13,6 +13,7 @@ exclude = ["./leptos", "./leptos-use"]
 resolver = "2"
 
 [workspace.dependencies]
+a2s = { version = "0.5.2" }
 anyhow = "1.0.71"
 axum = { version = "0.6.18", features = ["macros"] }
 dotenvy = "0.15.7"

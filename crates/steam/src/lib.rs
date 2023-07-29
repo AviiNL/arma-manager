@@ -3,6 +3,10 @@
 use process::ProcessControls;
 const BINARY_NAME: &str = "steamcmd.exe";
 
+pub fn is_runnung() -> bool {
+    process::is_running(BINARY_NAME)
+}
+
 #[derive(Debug)]
 pub struct Account {
     username: String,

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use api_schema::a2s::{Info, Player, PlayerOrInfo};
 use api_schema::{request::*, response::*};
 use derive_more::Display;
 use gloo_storage::{LocalStorage, Storage};
@@ -36,6 +37,8 @@ pub struct AppState {
     pub api: RwSignal<Option<AuthorizedApi>>,
     pub status: RwSignal<Option<Status>>,
     pub log: RwSignal<LogData>,
+    pub players: RwSignal<Vec<Player>>,
+    pub server_info: RwSignal<Option<Info>>,
     pub presets: RwSignal<PresetList>,
     pub config: RwSignal<ConfigData>,
     pub missions: RwSignal<MissionData>,
@@ -51,6 +54,8 @@ impl AppState {
             api: create_rw_signal(cx, None),
             status: create_rw_signal(cx, None),
             log: create_rw_signal(cx, Default::default()),
+            players: create_rw_signal(cx, Default::default()),
+            server_info: create_rw_signal(cx, Default::default()),
             presets: create_rw_signal(cx, Default::default()),
             config: create_rw_signal(cx, Default::default()),
             missions: create_rw_signal(cx, Default::default()),
@@ -65,6 +70,8 @@ impl AppState {
             self.user.set(None);
             self.status.set(None);
             self.log.set(Default::default());
+            self.players.set(Default::default());
+            self.server_info.set(Default::default());
             self.presets.set(Default::default());
             self.config.set(Default::default());
             self.missions.set(Default::default());
@@ -91,6 +98,8 @@ impl AppState {
         let user_signal = self.user.clone();
         let status_signal = self.status.clone();
         let log_signal = self.log.clone();
+        let info_signal = self.server_info.clone();
+        let players_signal = self.players.clone();
         let preset_signal = self.presets.clone();
         let config_signal = self.config.clone();
         let mission_signal = self.missions.clone();
@@ -119,6 +128,7 @@ impl AppState {
                     // deffo confirmed signed in at this point, so we can load everything else in parallel
                     set_status(cx, &api, &status_signal).await;
                     setup_logs(cx, &api, &log_signal).await;
+                    setup_a2s(cx, &api, &info_signal, &players_signal).await;
                     setup_presets(cx, &api, &preset_signal, &status_signal, &loading_signal).await;
                     setup_config(cx, &api, &config_signal).await;
                     setup_missions(cx, &api, &mission_signal).await;
@@ -227,6 +237,52 @@ async fn setup_logs(cx: Scope, api: &AuthorizedApi, log_signal: &RwSignal<LogDat
         },
     );
 
+    api.add_abort_signal(abort_signal);
+}
+
+async fn setup_a2s(
+    cx: Scope,
+    api: &AuthorizedApi,
+    info_signal: &RwSignal<Option<Info>>,
+    players_signal: &RwSignal<Vec<Player>>,
+) {
+    let aapi = api.clone();
+
+    let players_signal = players_signal.clone();
+    let info_signal = info_signal.clone();
+
+    if let Ok(new_data) = api.get_a2s_info().await {
+        info_signal.set(Some(new_data));
+    }
+
+    if let Ok(new_data) = api.get_a2s_players().await {
+        players_signal.set(new_data);
+    }
+
+    let abort_signal = create_sse(
+        cx,
+        "a2s",
+        vec!["info".to_string(), "players".to_string()],
+        move |channel, data| match channel.as_str() {
+            "info" => {
+                let PlayerOrInfo::Info(info) = data else {
+                    // invalid type, ignore
+                    return;
+                };
+
+                info_signal.set(Some(info));
+            }
+            "players" => {
+                let PlayerOrInfo::Players(players) = data else {
+                    // invalid type, ignore
+                    return;
+                };
+
+                players_signal.set(players);
+            }
+            _ => {}
+        },
+    );
     api.add_abort_signal(abort_signal);
 }
 
