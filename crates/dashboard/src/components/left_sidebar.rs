@@ -23,9 +23,7 @@ pub fn LeftSidebar(cx: Scope) -> impl IntoView {
                 <li>
                     <NavLink href={Page::Dashboard.path()} exact=true class="font-normal">
                         <i class="fa fa-home"/>
-                        <s>
-                            "Dashboard"
-                        </s>
+                        "Dashboard"
                     </NavLink>
                 </li>
                 <li>
