@@ -86,6 +86,15 @@ pub async fn stop_arma(Extension(status): Extension<Arc<StatusService>>) -> ApiR
 
     status.set_arma(State::Stopping).await;
 
+    tokio::spawn(async move {
+        // if arma status isn't stopped within 5 seconds, find the pid and kill it
+        tokio::time::sleep(Duration::from_secs(5)).await;
+        if status.arma().await != State::Stopped {
+            arma::kill();
+            status.set_arma(State::Stopped).await;
+        }
+    });
+
     Ok(ApiResponse::new(SimpleResponse {
         response: "OK".to_string(),
     }))

@@ -7,6 +7,26 @@ use tokio::sync::{
     RwLock,
 };
 
+pub fn is_running(process_name: &str) -> bool {
+    let mut system = sysinfo::System::new_all();
+    system.refresh_all();
+
+    for _ in system.processes_by_name(process_name) {
+        return true;
+    }
+
+    false
+}
+
+pub fn kill(process_name: &str) {
+    let mut system = sysinfo::System::new_all();
+    system.refresh_all();
+
+    for process in system.processes_by_name(process_name) {
+        process.kill();
+    }
+}
+
 enum ControlMessage {
     Stop,
     Kill,

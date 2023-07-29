@@ -16,9 +16,25 @@ impl StatusService {
     pub fn new() -> Arc<Self> {
         let tx = tokio::sync::watch::channel(Ok(Event::default())).0;
 
+        // use sysinfo to check if arma3server_x64.exe is running
+        // if it is, set arma to State::Running
+
+        // use sysinfo to check if steamcmd.exe is running
+        // if it is, set steam to State::Running
+
+        let mut status = Status::default();
+
+        if arma::is_runnung() {
+            status.arma = State::Running;
+        }
+
+        if steam::is_runnung() {
+            status.steamcmd = State::Running;
+        }
+
         Arc::new(Self {
             tx,
-            last_status: RwLock::new(Status::default()),
+            last_status: RwLock::new(status),
         })
     }
 

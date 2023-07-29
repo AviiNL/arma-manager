@@ -22,6 +22,14 @@ pub fn get_mod_path(published_file_id: i64) -> PathBuf {
         .join(published_file_id.to_string())
 }
 
+pub fn is_runnung() -> bool {
+    process::is_running("arma3server_x64.exe")
+}
+
+pub fn kill() {
+    process::kill("arma3server_x64.exe");
+}
+
 pub fn get_mod_str(preset: &Preset) -> Result<String, Box<dyn std::error::Error>> {
     let mut items = preset.items.clone();
     let mut dlcs = preset.dlcs.clone();
