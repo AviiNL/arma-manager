@@ -35,11 +35,14 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/api/v1/presets/dlc", patch(update_preset_dlc))
         .route("/api/v1/presets/item/blacklist", post(blacklist_item))
         .route("/api/v1/presets/item/blacklist", delete(unblacklist_item))
+        .route("/api/v1/a2s/info", get(api_a2s_info))
+        .route("/api/v1/a2s/players", get(api_a2s_players))
         // SSE routes
         .route("/sse/v1/status", get(sse_status_handler))
         .route("/sse/v1/logs", get(sse_logs))
         .route("/sse/v1/presets", get(sse_preset_handler))
         .route("/sse/v1/arma/config", get(sse_config))
+        .route("/sse/v1/a2s", get(sse_a2s))
         .layer(auth_layer)
         // Public routes
         .route("/api/v1/auth/register", post(register_user_handler))

@@ -30,6 +30,9 @@ pub async fn start() {
     let status = StatusService::new();
     let preset = PresetService::new(preset_repository.clone());
     let log = LogService::new();
+    let a2s = A2sService::new();
+
+    a2s.start();
 
     log.register("steamcmd", paths::get_log_path().join("steamcmd.log"));
     log.register("arma", paths::get_arma_log_path().join("*.rpt"));
@@ -53,6 +56,7 @@ pub async fn start() {
         .layer(Extension(status))
         .layer(Extension(preset))
         .layer(Extension(log))
+        .layer(Extension(a2s))
         .layer(cors);
 
     let dashboard = dashboard::get_router();

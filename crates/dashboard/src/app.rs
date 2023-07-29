@@ -68,7 +68,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                 >
                     <Route path=Page::Dashboard.path()
                         view=move |cx| {
-                            view! { cx, <Blank title="Dashboard" /> }
+                            view! { cx, <Dashboard /> }
                         }
                     />
                     <Route path=Page::Profile.path()
