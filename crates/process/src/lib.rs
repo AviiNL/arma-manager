@@ -11,7 +11,7 @@ pub fn is_running(process_name: &str) -> bool {
     let mut system = sysinfo::System::new_all();
     system.refresh_all();
 
-    for _ in system.processes_by_name(process_name) {
+    if system.processes_by_name(process_name).next().is_some() {
         return true;
     }
 
@@ -179,7 +179,7 @@ impl Process {
                     match message {
                         ControlMessage::Stop => {
                             // write ctrl+c to the process
-                            if let Err(_) = pty.write("".into()) {
+                            if pty.write("".into()).is_err() {
                                 break;
                             }
                         }
@@ -192,7 +192,7 @@ impl Process {
                                 process.kill();
                                 // sleep for 100ms
                                 tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                                if let Err(_) = pty.write("".into()) {
+                                if pty.write("".into()).is_err() {
                                     break;
                                 }
                             }

@@ -9,8 +9,8 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
 
     let name = item.name.clone();
     let toggle = create_action(cx, move |value: &bool| {
-        let id = item.id.clone();
-        let value = value.clone();
+        let id = item.id;
+        let value = *value;
         let name = name.clone();
         async move {
             let api = app_state.api.get_untracked().expect("there to be an Api");
@@ -29,7 +29,7 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
     });
 
     let toggle_blacklist = create_action(cx, move |()| {
-        let published_file_id = item.published_file_id.clone();
+        let published_file_id = item.published_file_id;
         let value = !item.blacklisted;
         async move {
             let api = app_state.api.get_untracked().expect("there to be an Api");
@@ -44,7 +44,7 @@ pub fn PresetItem(cx: Scope, item: PresetItem) -> impl IntoView {
     });
 
     let toggle_server_mod = create_action(cx, move |()| {
-        let id = item.id.clone();
+        let id = item.id;
         let value = !item.server_mod;
         async move {
             let api = app_state.api.get_untracked().expect("there to be an Api");

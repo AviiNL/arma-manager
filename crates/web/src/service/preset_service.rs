@@ -130,6 +130,6 @@ impl PresetService {
             tokio::fs::remove_dir_all(path).await?;
         }
 
-        return Ok(());
+        Ok(())
     }
 }

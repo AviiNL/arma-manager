@@ -19,7 +19,7 @@ pub fn Dashboard(cx: Scope) -> impl IntoView {
         app_state.server_info.get().map(|info| info.extended_server_info.port)
     });
 
-    let players = app_state.players.clone();
+    let players = app_state.players;
 
     let server = Signal::derive(cx, move || {
         app_state
@@ -55,7 +55,7 @@ pub fn Dashboard(cx: Scope) -> impl IntoView {
                 <div class="stat">
                     <div class="stat-title">"Players"</div>
                     <div class="stat-desc">
-                        {move || online_players.get().unwrap_or_else(|| 0)}/{move || max_players.get().unwrap_or_else(|| 0)}
+                        {move || online_players.get().unwrap_or(0)}/{move || max_players.get().unwrap_or(0)}
                     </div>
                 </div>
             </div>

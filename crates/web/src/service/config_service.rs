@@ -6,11 +6,17 @@ pub struct ConfigService {
     tx: broadcast::Sender<Event>,
 }
 
-impl ConfigService {
-    pub fn new() -> Self {
+impl Default for ConfigService {
+    fn default() -> Self {
         Self {
             tx: broadcast::channel(100).0,
         }
+    }
+}
+
+impl ConfigService {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn subscribe(&self) -> broadcast::Receiver<Event> {

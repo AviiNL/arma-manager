@@ -88,7 +88,7 @@ pub async fn login_user_handler(
 
     let ip_address = headers
         .get("X-Forwarded-For")
-        .and_then(|ip| Some(ip.to_str().ok()?.parse::<IpAddr>().ok()?))
+        .and_then(|ip| ip.to_str().ok()?.parse::<IpAddr>().ok())
         .unwrap_or_else(|| addr.ip());
 
     let user_token = token_repository
@@ -142,7 +142,7 @@ pub async fn update_user_handler(
     let email = body.email.to_owned().to_ascii_lowercase();
 
     let id = if let Some(id) = body.id.as_ref() {
-        Uuid::parse_str(&id).map_err(|_| ErrorResponse::new("Invalid id").with_status_code(StatusCode::BAD_REQUEST))?
+        Uuid::parse_str(id).map_err(|_| ErrorResponse::new("Invalid id").with_status_code(StatusCode::BAD_REQUEST))?
     } else {
         user.id
     };

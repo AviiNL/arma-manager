@@ -43,7 +43,7 @@ impl UnauthorizedApi {
         let url = format!("{}/auth/login", self.url);
         let response = Request::post(&url).json(credentials)?.send().await?;
         let token = into_json(response).await?;
-        Ok(AuthorizedApi::new(self.url, token, self.loading.clone()))
+        Ok(AuthorizedApi::new(self.url, token, self.loading))
     }
 }
 
@@ -96,8 +96,7 @@ impl AuthorizedApi {
 
     pub async fn revoke_token(&self, token: &RevokeTokenSchema) -> Result<FilteredUser> {
         let url = format!("{}/auth/token", self.url);
-        let result = self.send(Request::delete(&url).json(token)?).await;
-        result
+        self.send(Request::delete(&url).json(token)?).await
     }
 
     pub async fn user_info(&self) -> Result<FilteredUser> {
@@ -272,7 +271,7 @@ impl AuthorizedApi {
         let url = format!("{}/arma/mission", self.url);
 
         let mut form_data = FormData::new().expect("This to work");
-        form_data.append_with_blob_and_filename("file", &file, &file.name());
+        form_data.append_with_blob_and_filename("file", file, &file.name());
 
         let response = self.send(Request::post(&url).body(form_data)).await;
 

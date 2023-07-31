@@ -10,7 +10,7 @@ use leptos_router::*;
 #[component]
 pub fn Register(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let loading = app_state.loading.clone();
+    let loading = app_state.loading;
 
     let api = UnauthorizedApi::new(loading);
     let (register_response, set_register_response) = create_signal(cx, None::<FilteredUser>);

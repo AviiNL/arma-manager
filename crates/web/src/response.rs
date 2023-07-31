@@ -24,7 +24,7 @@ where
         Self {
             status: "success".into(),
             root_key_name: "data".into(),
-            data: data,
+            data,
             status_code: StatusCode::OK,
         }
     }

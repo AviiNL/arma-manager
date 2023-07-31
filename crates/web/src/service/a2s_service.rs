@@ -8,7 +8,7 @@ use tokio::sync::broadcast;
 #[derive(Debug, Clone, Serialize)]
 pub enum PlayerOrInfo {
     Players(Vec<Player>),
-    Info(Info),
+    Info(Box<Info>),
 }
 
 #[derive(Clone)]
@@ -53,36 +53,38 @@ impl A2sService {
             let ip = get_ip_address().expect("ip address");
             let ip_port = format!("{}:2303", ip);
             loop {
-                let client = a2s::A2SClient::new().await.expect("socket stuff");
-                if let Ok(info) = client.info(&ip_port).await {
-                    let mut last_info = last_info.write().unwrap();
-                    *last_info = Some(info.clone());
-                    drop(last_info);
-                    let info = PlayerOrInfo::Info(info);
-                    let info_json = serde_json::to_string(&info).expect("serde to work");
-                    let info_event = Event::default().event("info").data(info_json);
-                    let _ = tx.send(info_event);
-                };
-                drop(client);
+                {
+                    let client = a2s::A2SClient::new().await.expect("socket stuff");
+                    if let Ok(info) = client.info(&ip_port).await {
+                        let mut last_info = last_info.write().unwrap();
+                        *last_info = Some(info.clone());
+                        drop(last_info);
+                        let info = PlayerOrInfo::Info(Box::new(info));
+                        let info_json = serde_json::to_string(&info).expect("serde to work");
+                        let info_event = Event::default().event("info").data(info_json);
+                        let _ = tx.send(info_event);
+                    };
+                }
 
                 tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 
-                let client = a2s::A2SClient::new().await.expect("socket stuff");
-                match client.players(&ip_port).await {
-                    Ok(players) => {
-                        let mut last_players = last_players.write().unwrap();
-                        *last_players = players.clone();
-                        drop(last_players);
-                        let players = PlayerOrInfo::Players(players);
-                        let players_json = serde_json::to_string(&players).expect("serde to work");
-                        let players_event = Event::default().event("players").data(players_json);
-                        let _ = tx.send(players_event);
-                    }
-                    Err(e) => {
-                        tracing::error!("{:?}", e);
+                {
+                    let client = a2s::A2SClient::new().await.expect("socket stuff");
+                    match client.players(&ip_port).await {
+                        Ok(players) => {
+                            let mut last_players = last_players.write().unwrap();
+                            *last_players = players.clone();
+                            drop(last_players);
+                            let players = PlayerOrInfo::Players(players);
+                            let players_json = serde_json::to_string(&players).expect("serde to work");
+                            let players_event = Event::default().event("players").data(players_json);
+                            let _ = tx.send(players_event);
+                        }
+                        Err(e) => {
+                            tracing::error!("{:?}", e);
+                        }
                     }
                 }
-                drop(client);
 
                 // sleep
                 tokio::time::sleep(std::time::Duration::from_secs(5)).await;

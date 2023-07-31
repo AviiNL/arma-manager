@@ -15,7 +15,7 @@ use super::Page;
 #[component]
 pub fn AuthenticatedBase(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let loading = app_state.loading.clone();
+    let loading = app_state.loading;
 
     app_state.check_auth(cx);
 
