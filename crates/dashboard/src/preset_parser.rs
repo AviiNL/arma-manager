@@ -23,16 +23,15 @@ pub fn parse(document: &str) -> Result<CreatePresetSchema, Box<dyn std::error::E
 
     let mut items = Vec::default();
 
-    let mut index = 0;
-    for mod_ in mods {
-        index += 1;
+    for (index, mod_) in mods.into_iter().enumerate() {
+        let index = index + 1;
         let id = get_mod_id(&mod_);
         let name = get_mod_name(&mod_);
 
         items.push(PresetItemSchema {
             name,
             published_file_id: id,
-            position: index,
+            position: index as i64,
             enabled: true,
         });
     }
@@ -47,51 +46,50 @@ pub fn parse(document: &str) -> Result<CreatePresetSchema, Box<dyn std::error::E
         .select(&scraper::Selector::parse("tr[data-type=\"DlcContainer\"]").unwrap())
         .collect::<Vec<_>>();
 
-    let mut dlc_items = Vec::default();
-
-    // Push in all the DLCs, update "enabled" later
-    dlc_items.push(PresetDlcSchema {
-        name: String::from("Spearhead 1944"),
-        key: String::from("spe"),
-        app_id: 1175380,
-        enabled: false,
-        position: 1,
-    });
-    dlc_items.push(PresetDlcSchema {
-        name: String::from("Western Sahara"),
-        key: String::from("ws"),
-        app_id: 1681170,
-        enabled: false,
-        position: 2,
-    });
-    dlc_items.push(PresetDlcSchema {
-        name: String::from("S.O.G. Prairie Fire"),
-        key: String::from("vn"),
-        app_id: 1227700,
-        enabled: false,
-        position: 3,
-    });
-    dlc_items.push(PresetDlcSchema {
-        name: String::from("CSLA Iron Curtain"),
-        key: String::from("csla"),
-        app_id: 1294440,
-        enabled: false,
-        position: 4,
-    });
-    dlc_items.push(PresetDlcSchema {
-        name: String::from("Global Mobilization"),
-        key: String::from("gm"),
-        app_id: 1042220,
-        enabled: false,
-        position: 5,
-    });
-    dlc_items.push(PresetDlcSchema {
-        name: String::from("Contact"),
-        key: String::from("enoch"),
-        app_id: 1021790,
-        enabled: false,
-        position: 6,
-    });
+    let mut dlc_items = vec![
+        PresetDlcSchema {
+            name: String::from("Spearhead 1944"),
+            key: String::from("spe"),
+            app_id: 1175380,
+            enabled: false,
+            position: 1,
+        },
+        PresetDlcSchema {
+            name: String::from("Western Sahara"),
+            key: String::from("ws"),
+            app_id: 1681170,
+            enabled: false,
+            position: 2,
+        },
+        PresetDlcSchema {
+            name: String::from("S.O.G. Prairie Fire"),
+            key: String::from("vn"),
+            app_id: 1227700,
+            enabled: false,
+            position: 3,
+        },
+        PresetDlcSchema {
+            name: String::from("CSLA Iron Curtain"),
+            key: String::from("csla"),
+            app_id: 1294440,
+            enabled: false,
+            position: 4,
+        },
+        PresetDlcSchema {
+            name: String::from("Global Mobilization"),
+            key: String::from("gm"),
+            app_id: 1042220,
+            enabled: false,
+            position: 5,
+        },
+        PresetDlcSchema {
+            name: String::from("Contact"),
+            key: String::from("enoch"),
+            app_id: 1021790,
+            enabled: false,
+            position: 6,
+        },
+    ];
 
     for dlc in dlcs {
         let app_id = get_mod_id(&dlc);
@@ -122,9 +120,7 @@ fn get_mod_id(element: &scraper::ElementRef) -> i64 {
 
     let id = href.split('/').last().unwrap(); // ?id=450814997
     let id = id.split('=').last().unwrap(); // 450814997
-    let id = id.parse::<i64>().unwrap(); // 450814997
-
-    id
+    id.parse::<i64>().unwrap() // 450814997
 }
 
 fn get_mod_name(element: &scraper::ElementRef) -> String {

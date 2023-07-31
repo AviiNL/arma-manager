@@ -10,8 +10,8 @@ pub fn ServerButtons(cx: Scope) -> impl IntoView {
     //let authorized_api = use_context::<AuthorizedApi>(cx).expect("to have found the api provided");
 
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let status = app_state.status.clone();
-    let api = app_state.api.clone();
+    let status = app_state.status;
+    let api = app_state.api;
 
     let update_arma = create_action(cx, move |_| {
         let api = api.clone().get_untracked().expect("to have found the api provided");

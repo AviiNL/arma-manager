@@ -16,6 +16,7 @@ use crate::{
     sse::create_sse,
 };
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Clone, Serialize, Deserialize, PartialEq)]
 pub enum Loading {
     Loading(Option<&'static str>),
@@ -92,17 +93,17 @@ impl AppState {
             return;
         }
 
-        let api_signal = self.api.clone();
-        let loading_signal = self.loading.clone();
+        let api_signal = self.api;
+        let loading_signal = self.loading;
 
-        let user_signal = self.user.clone();
-        let status_signal = self.status.clone();
-        let log_signal = self.log.clone();
-        let info_signal = self.server_info.clone();
-        let players_signal = self.players.clone();
-        let preset_signal = self.presets.clone();
-        let config_signal = self.config.clone();
-        let mission_signal = self.missions.clone();
+        let user_signal = self.user;
+        let status_signal = self.status;
+        let log_signal = self.log;
+        let info_signal = self.server_info;
+        let players_signal = self.players;
+        let preset_signal = self.presets;
+        let config_signal = self.config;
+        let mission_signal = self.missions;
 
         create_effect(cx, move |_| {
             if let Some(api) = api_signal.get() {
@@ -118,7 +119,7 @@ impl AppState {
                         api_signal.set(None);
                         loading_signal.set(Loading::Ready);
 
-                        if route.path() != crate::pages::Page::Login.path().trim_start_matches("/") {
+                        if route.path() != crate::pages::Page::Login.path().trim_start_matches('/') {
                             navigate(crate::pages::Page::Login.path(), Default::default()).expect("Login route");
                         }
 
@@ -134,7 +135,7 @@ impl AppState {
                     setup_missions(cx, &api, &mission_signal).await;
 
                     // only do this if we are on Login page
-                    if route.path() == crate::pages::Page::Login.path().trim_start_matches("/") {
+                    if route.path() == crate::pages::Page::Login.path().trim_start_matches('/') {
                         tracing::info!("Redirecting to {}", crate::pages::Page::Home.path());
                         navigate(crate::pages::Page::Home.path(), Default::default()).expect("Home route");
                     }
@@ -144,7 +145,7 @@ impl AppState {
 
         create_effect(cx, move |_| {
             if let Ok(token) = LocalStorage::get(API_TOKEN_STORAGE_KEY) {
-                let api = AuthorizedApi::new(DEFAULT_API_URL, token, loading_signal.clone());
+                let api = AuthorizedApi::new(DEFAULT_API_URL, token, loading_signal);
                 api_signal.set(Some(api));
             } else {
                 // not logged in, stop loading
@@ -154,7 +155,7 @@ impl AppState {
     }
 
     pub fn load_theme(&self, cx: Scope) -> RwSignal<AdditionalAttributes> {
-        let theme = self.theme.clone();
+        let theme = self.theme;
         create_effect(cx, move |_| {
             let set_theme = match LocalStorage::get("theme") {
                 Ok(theme) => theme,
@@ -183,7 +184,7 @@ async fn set_user(api: &AuthorizedApi, user_signal: &RwSignal<Option<FilteredUse
 
 async fn set_status(cx: Scope, api: &AuthorizedApi, status_signal: &RwSignal<Option<Status>>) {
     let api = api.clone();
-    let status_signal = status_signal.clone();
+    let status_signal = *status_signal;
 
     if let Ok(status) = api.last_status().await {
         status_signal.set(Some(status));
@@ -219,7 +220,7 @@ async fn setup_logs(cx: Scope, api: &AuthorizedApi, log_signal: &RwSignal<LogDat
         });
     }
 
-    let log_signal = log_signal.clone();
+    let log_signal = *log_signal;
     let abort_signal = create_sse(
         cx,
         "logs",
@@ -248,8 +249,8 @@ async fn setup_a2s(
 ) {
     let aapi = api.clone();
 
-    let players_signal = players_signal.clone();
-    let info_signal = info_signal.clone();
+    let players_signal = *players_signal;
+    let info_signal = *info_signal;
 
     if let Ok(new_data) = api.get_a2s_info().await {
         info_signal.set(Some(new_data));
@@ -270,7 +271,7 @@ async fn setup_a2s(
                     return;
                 };
 
-                info_signal.set(Some(info));
+                info_signal.set(Some(*info));
             }
             "players" => {
                 let PlayerOrInfo::Players(players) = data else {
@@ -294,9 +295,9 @@ async fn setup_presets(
     loading: &RwSignal<Loading>,
 ) {
     let aapi = api.clone();
-    let status = status.clone();
+    let status = *status;
 
-    let presets = preset_signal.clone();
+    let presets = *preset_signal;
     create_resource(
         cx,
         move || status.get(),
@@ -314,8 +315,8 @@ async fn setup_presets(
         },
     );
 
-    let presets = preset_signal.clone();
-    let loading = loading.clone();
+    let presets = *preset_signal;
+    let loading = *loading;
     let abort_signal = create_sse(
         cx,
         "presets",
@@ -452,7 +453,7 @@ async fn setup_presets(
 
 async fn setup_config(cx: Scope, api: &AuthorizedApi, config_signal: &RwSignal<ConfigData>) {
     let api = api.clone();
-    let config_signal = config_signal.clone();
+    let config_signal = *config_signal;
 
     if let Ok(new_data) = api.get_config("server.cfg").await {
         config_signal.update(|l| {
@@ -487,7 +488,7 @@ async fn setup_config(cx: Scope, api: &AuthorizedApi, config_signal: &RwSignal<C
 
 async fn setup_missions(cx: Scope, api: &AuthorizedApi, mission_signal: &RwSignal<MissionData>) {
     let api = api.clone();
-    let mission_signal = mission_signal.clone();
+    let mission_signal = mission_signal;
 
     if let Ok(new_data) = api.get_missions().await {
         mission_signal.set(new_data.missions);

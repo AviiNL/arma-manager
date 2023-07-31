@@ -17,15 +17,15 @@ trait Gravatar {
 impl Gravatar for FilteredUser {
     fn gravatar(&self, size: u32) -> String {
         let hash = md5::compute(self.email.as_bytes());
-        format!("https://www.gravatar.com/avatar/{:?}?s={}", hash, size.to_string())
+        format!("https://www.gravatar.com/avatar/{:?}?s={}", hash, size)
     }
 }
 
 #[component]
 pub fn Header(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("to have found the app_state provided");
-    let theme = app_state.theme.clone();
-    let user = app_state.user.clone();
+    let theme = app_state.theme;
+    let user = app_state.user;
     let internal_user = create_rw_signal::<Option<FilteredUser>>(cx, None);
 
     create_effect(cx, move |_| {

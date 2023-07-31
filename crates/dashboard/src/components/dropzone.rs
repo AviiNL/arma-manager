@@ -18,8 +18,8 @@ use crate::{
 #[component]
 pub fn Dropzone(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let api = app_state.api.clone();
-    let loading = app_state.loading.clone();
+    let api = app_state.api;
+    let loading = app_state.loading;
 
     let document = leptos::window();
 

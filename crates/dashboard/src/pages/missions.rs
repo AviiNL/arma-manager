@@ -6,7 +6,7 @@ use crate::app_state::AppState;
 #[component]
 pub fn Missions(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let missions = app_state.missions.clone();
+    let missions = app_state.missions;
 
     view! { cx,
         <div class="card w-full flex-1 p-6 bg-base-100 shadow-xl mt-2 mb-4">

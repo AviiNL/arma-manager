@@ -52,7 +52,7 @@ fn extract_progress(s: &str) -> Option<(u64, u64)> {
     let split = s.rsplit_once(" / ")?;
 
     Some((
-        split.0.rsplit_once("(")?.1.parse::<u64>().ok()?,
-        split.1.split_once(")")?.0.parse::<u64>().ok()?,
+        split.0.rsplit_once('(')?.1.parse::<u64>().ok()?,
+        split.1.split_once(')')?.0.parse::<u64>().ok()?,
     ))
 }

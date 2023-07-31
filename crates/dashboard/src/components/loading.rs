@@ -12,12 +12,9 @@ use crate::{
 pub fn Loading(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
 
-    let loading = app_state.loading.clone();
+    let loading = app_state.loading;
 
-    let checked = move || match loading.get() {
-        app_state::Loading::Loading(_) => true,
-        _ => false,
-    };
+    let checked = move || matches!(loading.get(), app_state::Loading::Loading(_));
 
     let text = move || match loading.get() {
         app_state::Loading::Loading(text) => text,

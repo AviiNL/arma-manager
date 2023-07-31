@@ -224,13 +224,19 @@ pub struct Arma3 {
     name: String,
 }
 
-impl Arma3 {
-    pub fn new() -> Self {
+impl Default for Arma3 {
+    fn default() -> Self {
         Self {
             mods: None,
             parameters: None,
             name: "server".to_string(),
         }
+    }
+}
+
+impl Arma3 {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn mods(mut self, mods: String) -> Self {

@@ -6,7 +6,7 @@ use crate::{app_state::AppState, components::ToastStyle};
 #[component]
 pub fn Profile(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("there to be an AppState");
-    let user = app_state.user.clone();
+    let user = app_state.user;
 
     let name_signal = create_rw_signal(cx, String::default());
     let email_signal = create_rw_signal(cx, String::default());
@@ -21,7 +21,7 @@ pub fn Profile(cx: Scope) -> impl IntoView {
         if let Some(user) = user.get() {
             return user.name != name || user.email != email || !password.is_empty() || !confirm_password.is_empty();
         }
-        return false;
+        false
     });
 
     create_effect(cx, move |_| {
@@ -32,12 +32,12 @@ pub fn Profile(cx: Scope) -> impl IntoView {
     });
 
     let tokens = Signal::derive(cx, move || match user.get() {
-        None => return vec![],
+        None => vec![],
         Some(user) => {
             let mut tokens = user.tokens.clone();
             // sort by last_used DESC
             tokens.sort_by(|a, b| b.last_used.cmp(&a.last_used));
-            return tokens;
+            tokens
         }
     });
 
@@ -175,7 +175,7 @@ pub fn Token(cx: Scope, token: FilteredUserToken) -> impl IntoView {
     let revoke = create_action(cx, move |()| {
         let app_state = use_context::<AppState>(cx).expect("AppState to exist");
         let api = app_state.api.get_untracked().expect("api to exist");
-        let user = app_state.user.clone();
+        let user = app_state.user;
         let token = token.token.clone();
         async move {
             if let Ok(new_user) = api.revoke_token(&RevokeTokenSchema { token }).await {

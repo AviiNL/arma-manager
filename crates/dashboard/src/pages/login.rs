@@ -13,8 +13,8 @@ use leptos_router::*;
 #[component]
 pub fn Login(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let authorized_api = app_state.api.clone();
-    let loading = app_state.loading.clone();
+    let authorized_api = app_state.api;
+    let loading = app_state.loading;
 
     app_state.check_auth(cx);
 

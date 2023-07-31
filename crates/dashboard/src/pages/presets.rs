@@ -10,10 +10,9 @@ use crate::{
 #[component]
 pub fn Presets(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let loading = app_state.loading.clone();
-    let presets = app_state.presets.clone();
-
-    let status = app_state.status.clone();
+    let loading = app_state.loading;
+    let presets = app_state.presets;
+    let status = app_state.status;
 
     let hide_blacklisted = create_rw_signal(cx, false);
     create_effect(cx, move |_| {
@@ -33,18 +32,16 @@ pub fn Presets(cx: Scope) -> impl IntoView {
         let mut preset = preset.clone();
 
         if hide_blacklisted.get() {
-            preset.items = preset.items.into_iter().filter(|item| !item.blacklisted).collect();
+            preset.items.retain(|item| !item.blacklisted);
         }
 
         if search.is_empty() {
             return Some(preset);
         }
 
-        preset.items = preset
+        preset
             .items
-            .into_iter()
-            .filter(|item| item.name.to_lowercase().contains(&search.to_lowercase()))
-            .collect();
+            .retain(|item| item.name.to_lowercase().contains(&search.to_lowercase()));
 
         Some(preset)
     });
@@ -63,7 +60,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
     });
 
     let select_preset = create_action(cx, move |id: &i64| {
-        let id = id.clone();
+        let id = *id;
         async move {
             if let Some(preset) = filtered_preset.get_untracked() {
                 if preset.id == id {
@@ -98,7 +95,7 @@ pub fn Presets(cx: Scope) -> impl IntoView {
     });
 
     let delete_preset = create_action(cx, move |id: &i64| {
-        let id = id.clone();
+        let id = *id;
         async move {
             let api = app_state.api.get_untracked().expect("there to be an Api");
             let schema = DeletePresetSchema { id };
@@ -173,12 +170,10 @@ pub fn Presets(cx: Scope) -> impl IntoView {
                                     } else {
                                         format!("Hide Blacklisted ({})", blacklist_count)
                                     }
+                                } else if hide_blacklisted.get() {
+                                    format!("Show Blacklisted")
                                 } else {
-                                    if hide_blacklisted.get() {
-                                        format!("Show Blacklisted")
-                                    } else {
-                                        format!("Hide Blacklisted")
-                                    }
+                                    format!("Hide Blacklisted")
                                 }
                             }
                         </button>

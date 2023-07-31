@@ -6,8 +6,8 @@ use crate::{api::AuthorizedApi, app_state::AppState, components::*};
 #[component]
 pub fn SteamCmdDialog(cx: Scope) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let status = app_state.status.clone();
-    let api = app_state.api.clone();
+    let status = app_state.status;
+    let api = app_state.api;
 
     let progress = create_rw_signal(cx, Progress::default());
 

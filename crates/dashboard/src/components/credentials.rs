@@ -11,7 +11,7 @@ pub fn LoginForm(
     disabled: Signal<bool>,
 ) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("to have found the app_state provided");
-    let loading = app_state.loading.clone();
+    let loading = app_state.loading;
 
     let (password, set_password) = create_signal(cx, String::new());
     let (email, set_email) = create_signal(cx, String::new());
@@ -105,7 +105,7 @@ pub fn RegisterForm(
     disabled: Signal<bool>,
 ) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("to have found the app_state provided");
-    let loading = app_state.loading.clone();
+    let loading = app_state.loading;
 
     let (repeat_password, set_repeat_password) = create_signal(cx, String::new());
     let (password, set_password) = create_signal(cx, String::new());

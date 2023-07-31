@@ -9,8 +9,8 @@ pub fn PresetDlc(cx: Scope, item: DlcItem) -> impl IntoView {
 
     let name = item.name.clone();
     let toggle = create_action(cx, move |value: &bool| {
-        let id = item.id.clone();
-        let value = value.clone();
+        let id = item.id;
+        let value = *value;
         let name = name.clone();
         async move {
             let api = app_state.api.get_untracked().expect("there to be an Api");

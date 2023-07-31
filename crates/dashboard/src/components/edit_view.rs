@@ -11,7 +11,7 @@ where
     F: Fn() -> String + 'static + Clone,
 {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let arma_config = app_state.config.clone();
+    let arma_config = app_state.config;
 
     let element = create_node_ref::<Textarea>(cx);
 

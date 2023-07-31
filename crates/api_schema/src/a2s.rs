@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum PlayerOrInfo {
     Players(Vec<Player>),
-    Info(Info),
+    Info(Box<Info>),
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -75,7 +75,7 @@ impl std::fmt::Display for ServerType {
             ServerType::SourceTV => "SourceTV",
         };
 
-        write!(f, "{}", value.to_string())
+        write!(f, "{}", value)
     }
 }
 
@@ -95,7 +95,7 @@ impl std::fmt::Display for ServerOS {
             ServerOS::Mac => "Mac",
         };
 
-        write!(f, "{}", value.to_string())
+        write!(f, "{}", value)
     }
 }
 

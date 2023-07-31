@@ -22,6 +22,7 @@ pub struct TokenQuery {
     pub token: Option<String>,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn auth<B>(
     cookie_jar: CookieJar,
     State(config): State<Config>,
@@ -37,14 +38,7 @@ pub async fn auth<B>(
             req.headers()
                 .get(header::AUTHORIZATION)
                 .and_then(|auth_header| auth_header.to_str().ok())
-                .and_then(|auth_value| {
-                    if auth_value.starts_with("Bearer ") {
-                        let token = auth_value[7..].to_string();
-                        Some(token)
-                    } else {
-                        return None;
-                    }
-                })
+                .and_then(|auth_value| auth_value.strip_prefix("Bearer ").map(|stripped| stripped.to_string()))
                 .or_else(|| token_query.token.clone())
         },
         |c| {
@@ -60,7 +54,7 @@ pub async fn auth<B>(
 
     let claims = decode::<TokenClaims>(
         &token,
-        &DecodingKey::from_secret(&config.jwt_secret.as_ref()),
+        &DecodingKey::from_secret(config.jwt_secret.as_ref()),
         &Validation::default(),
     )
     .map_err(|_| ErrorResponse::new("Invalid Token").with_status_code(StatusCode::UNAUTHORIZED))?
@@ -86,7 +80,7 @@ pub async fn auth<B>(
     let ip_address = req
         .headers()
         .get("X-Forwarded-For")
-        .and_then(|ip| Some(ip.to_str().ok()?.parse::<IpAddr>().ok()?))
+        .and_then(|ip| ip.to_str().ok()?.parse::<IpAddr>().ok())
         .unwrap_or_else(|| addr.ip());
 
     if user_ip != ip_address {
@@ -118,5 +112,3 @@ pub async fn auth<B>(
 
     Ok(next.run(req).await)
 }
-
-// Err(ErrorResponse::new("Unauthorized").with_status_code(StatusCode::UNAUTHORIZED).into())

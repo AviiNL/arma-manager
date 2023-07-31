@@ -13,7 +13,7 @@ pub fn LogView(
     #[prop(optional)] progress: Option<RwSignal<Progress>>,
 ) -> impl IntoView {
     let app_state = use_context::<AppState>(cx).expect("AppState to exist");
-    let log_data = app_state.log.clone();
+    let log_data = app_state.log;
 
     let log_content = create_rw_signal(cx, String::new());
 
@@ -72,7 +72,7 @@ pub fn LogView(
     });
 
     let clear_log = create_action(cx, move |()| {
-        let log_data = log_data.clone();
+        let log_data = log_data;
         async move {
             log_data.update(move |log| {
                 log.insert(channel.to_string(), vec![]);

@@ -108,14 +108,14 @@ pub fn User(cx: Scope, user_signal: RwSignal<Option<FilteredUser>>) -> impl Into
     let id = user.id.clone();
     let name_signal = create_rw_signal(cx, user.name.clone());
     let email_signal = create_rw_signal(cx, user.email.clone());
-    let verified_signal = create_rw_signal(cx, user.verified.clone());
+    let verified_signal = create_rw_signal(cx, user.verified);
 
     let changed = Signal::derive(cx, move || {
         let user = user.clone();
         let name = name_signal.get();
         let email = email_signal.get();
         let verified = verified_signal.get();
-        return user.name != name || user.email != email || user.verified != verified;
+        user.name != name || user.email != email || user.verified != verified
     });
 
     let update = create_action(cx, move |()| {

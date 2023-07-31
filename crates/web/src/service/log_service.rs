@@ -21,12 +21,18 @@ pub struct LogService {
     tx: broadcast::Sender<Event>,
 }
 
-impl LogService {
-    pub fn new() -> Self {
+impl Default for LogService {
+    fn default() -> Self {
         Self {
             map: Arc::new(RwLock::new(HashMap::new())),
             tx: broadcast::channel(100).0,
         }
+    }
+}
+
+impl LogService {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub fn register(&self, channel: impl Into<String>, path_to_file_or_folder: impl Into<PathBuf>) {
@@ -118,7 +124,7 @@ impl LogService {
 
         let tx = self.tx.clone();
         tokio::spawn(async move {
-            if let Err(e) = watcher.watch(&watch_options.path.as_path(), RecursiveMode::Recursive) {
+            if let Err(e) = watcher.watch(watch_options.path.as_path(), RecursiveMode::Recursive) {
                 println!("watch error: {:?}", e);
                 return;
             }
@@ -189,10 +195,10 @@ struct WatchOptions {
 }
 
 impl WatchOptions {
-    pub fn new(channel: &String, path: &PathBuf) -> Self {
+    pub fn new(channel: &str, path: &Path) -> Self {
         let mut watch_options = Self {
-            channel: channel.clone(),
-            path: path.clone(),
+            channel: channel.to_owned(),
+            path: path.to_path_buf(),
             stem: None,
             extension: None,
         };
@@ -206,14 +212,12 @@ impl WatchOptions {
                 watch_options.stem = Some(stem);
             }
             watch_options.extension = Some(path.extension().unwrap().to_str().unwrap().to_string());
-        } else {
-            if let Ok(metadata) = std::fs::metadata(path.as_path()) {
-                if metadata.is_file() {
-                    watch_options.path = path.parent().unwrap().into();
-                    let stem = path.file_stem().unwrap().to_str().unwrap().to_string();
-                    watch_options.stem = Some(stem);
-                    watch_options.extension = Some(path.extension().unwrap().to_str().unwrap().to_string());
-                }
+        } else if let Ok(metadata) = std::fs::metadata(path) {
+            if metadata.is_file() {
+                watch_options.path = path.parent().unwrap().into();
+                let stem = path.file_stem().unwrap().to_str().unwrap().to_string();
+                watch_options.stem = Some(stem);
+                watch_options.extension = Some(path.extension().unwrap().to_str().unwrap().to_string());
             }
         }
 
@@ -238,7 +242,7 @@ impl WatchOptions {
         for path in paths {
             let eosrihgweruihg = path.to_str().unwrap();
 
-            if !Pattern::new(&test_path).unwrap().matches(&eosrihgweruihg) {
+            if !Pattern::new(&test_path).unwrap().matches(eosrihgweruihg) {
                 continue;
             }
 
