@@ -190,6 +190,8 @@ pub fn get_default_parameters() -> Vec<String> {
     params.push("-skipIntro".to_string());
     params.push("-enableHT".to_string());
     params.push("-hugePages".to_string());
+    params.push("-loadMissionToMemory".to_string());
+    params.push("-autoInit".to_string());
     params.push("-limitFPS=80".to_string());
     params.push(format!("-cpuCount={}", cpus));
 
